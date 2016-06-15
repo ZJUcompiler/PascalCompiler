@@ -3,6 +3,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 typedef enum{
 N_ROUTINE,
 N_ROUTINE_HEAD,

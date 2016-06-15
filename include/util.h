@@ -10,5 +10,6 @@ void appendChild(TreeNode *t, TreeNode *child);
 TreeNode *newTokenTreeNode(NodeKind kind, char* tokenString);
 void printTreeNode(TreeNode* treeNode);
 char* getNodeKindString(NodeKind kind);
-
+void deleteTreeNode(TreeNode *t);
+char *toConstVal(TreeNode *t);
 #endif

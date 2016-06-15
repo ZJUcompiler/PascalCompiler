@@ -3,21 +3,21 @@
 
 inline int isConstValK( TreeNode *tree )
 {
-    return (tree->nodeKind == N_INTEGER ||
-            tree->nodeKind == N_REAL ||
-            // tree->nodeKind == N_CHAR ||
-            // tree->nodeKind == N_STRING ||
-            tree->nodeKind == N_SYS_CON);
+    return (tree->nodekind == N_INTEGER ||
+            tree->nodekind == N_REAL ||
+            // tree->nodekind == N_CHAR ||
+            // tree->nodekind == N_STRING ||
+            tree->nodekind == N_SYS_CON);
 }
 
 inline int isCharK( TreeNode *tree)
 {
-    return tree->nodeKind == N_CHAR;
+    return tree->nodekind == N_CHAR;
 }
 
 inline int isStringK( TreeNode *tree)
 {
-    return tree->nodeKind == N_STRING;
+    return tree->nodekind == N_STRING;
 }
 
 static void foldConst(TreeNode *t)
@@ -34,91 +34,91 @@ static void foldConst(TreeNode *t)
 
     if ( isConstValK(p1) && isConstValK(p2) )
     {
-        switch(t->nodeKind)
+        switch(t->nodekind)
         {
             case N_EXP_GE:
                 r = itoa(atof(p1->tokenString)>=atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_GT:
                 r = itoa(atof(p1->tokenString)>atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_LE:
                 r = itoa(atof(p1->tokenString)<=atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_LT:
                 r = itoa(atof(p1->tokenString)<atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_EQUAL:
                 r = itoa(atof(p1->tokenString)==atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_UNEQUAL:
                 r = itoa(atof(p1->tokenString)!=atof(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_PLUS:
-                if (p1->nodeKind == N_REAL || p2->nodeKind == N_REAL)
+                if (p1->nodekind == N_REAL || p2->nodekind == N_REAL)
                 {
                     r = ftoa(atof(p1->tokenString)+atof(p2->tokenString));
-                    t->nodeKind = N_REAL;
+                    t->nodekind = N_REAL;
                 }
                 else
                 {
                     r = itoa(atoi(p1->tokenString)+atoi(p2->tokenString));
-                    t->nodeKind = N_INTEGER;
+                    t->nodekind = N_INTEGER;
                 }
                 break;
             case N_EXP_MINUS:
-                if (p1->nodeKind == N_REAL || p2->nodeKind == N_REAL)
+                if (p1->nodekind == N_REAL || p2->nodekind == N_REAL)
                 {
                     r = ftoa(atof(p1->tokenString)-atof(p2->tokenString));
-                    t->nodeKind = N_REAL;
+                    t->nodekind = N_REAL;
                 }
                 else
                 {
                     r = itoa(atoi(p1->tokenString)-atoi(p2->tokenString));
-                    t->nodeKind = N_INTEGER;
+                    t->nodekind = N_INTEGER;
                 }
                 break;
             case N_EXP_OR:
                 r = itoa(atoi(toConstVal(p1))||atoi(toConstVal(p2->tokenString)));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_MUL:
-                if (p1->nodeKind == N_REAL || p2->nodeKind == N_REAL)
+                if (p1->nodekind == N_REAL || p2->nodekind == N_REAL)
                 {
                     r = ftoa(atof(p1->tokenString)*atof(p2->tokenString));
-                    t->nodeKind = N_REAL;
+                    t->nodekind = N_REAL;
                 }
                 else
                 {
                     r = itoa(atoi(p1->tokenString)*atoi(p2->tokenString));
-                    t->nodeKind = N_INTEGER;
+                    t->nodekind = N_INTEGER;
                 }
                 break;
             case N_EXP_DIV:
-                if (p1->nodeKind == N_REAL || p2->nodeKind == N_REAL)
+                if (p1->nodekind == N_REAL || p2->nodekind == N_REAL)
                 {
                     r = ftoa(atof(p1->tokenString)/atof(p2->tokenString));
-                    t->nodeKind = N_REAL;
+                    t->nodekind = N_REAL;
                 }
                 else
                 {
                     r = itoa(atoi(p1->tokenString)/atoi(p2->tokenString));
-                    t->nodeKind = N_INTEGER;
+                    t->nodekind = N_INTEGER;
                 }
                 break;
             case N_EXP_MOD:
                 r = itoa(atoi(p1->tokenString)%atoi(p2->tokenString));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
             case N_EXP_AND:
                 r = itoa(atoi(toConstVal(p1))&&atoi(toConstVal(p2->tokenString)));
-                t->nodeKind = N_INTEGER;
+                t->nodekind = N_INTEGER;
                 break;
         } 
         if (t->tokenString)
