@@ -1,4 +1,5 @@
 #include "util.h"
+#include <assert.h>
 
 TreeNode *newTreeNode(NodeKind kind){
 	TreeNode* t = (TreeNode *) malloc(sizeof(TreeNode));
@@ -23,6 +24,18 @@ TreeNode *newTokenTreeNode(NodeKind kind, char* tokenString){
 	if (traceflag) printTreeNode(t);
 
 	return t;
+}
+
+// leaf node only
+void deleteTreeNode(TreeNode *t)
+{
+	assert(t->child == NULL);
+	assert(t->sibling == NULL);
+	if (t->tokenString)
+	{
+		free(t->tokenString);
+	}
+	free(t);
 }
 
 void appendChild(TreeNode *t, TreeNode *child){
@@ -328,4 +341,24 @@ char* getNodeKindString(NodeKind kind){
 		default:
 			return "UNKNOWN";
 	}
+}
+
+char *toConstVal( TreeNode *tree )
+{
+    switch (tree->nodekind)
+    {
+        case N_INTEGER: case N_REAL:
+            return tree->tokenString;
+        case N_SYS_CON:
+            if (strcmp(tree->tokenString, "true")==0)
+                return "1";    
+            else if(strcmp(tree->tokenString, "maxint")==0)
+                return "2147483648";
+            else if(strcmp(tree->tokenString, "false")==0)
+                return "0";
+            assert(0);
+            break;
+        default: 
+            assert(0);
+    }
 }
