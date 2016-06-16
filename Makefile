@@ -20,8 +20,8 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 PasC: $(OBJ)
 	$(CC) $(DFLAGS) -o $@ $(OBJ) $(CFLAGS) # $(LDFLAGS)
 
-parse: $(ODIR)/main.o $(ODIR)/util.o $(ODIR)/y.tab.o $(ODIR)/lex.yy.o
-	$(CC) $(DFLAGS) -o $@ $(CFLAGS) $^
+# parse: $(ODIR)/main.o $(ODIR)/util.o $(ODIR)/y.tab.o $(ODIR)/lex.yy.o
+# 	$(CC) $(DFLAGS) -o $@ $(CFLAGS) $^
 
 # $(SDIR)/lex.yy.c: Lex_Yacc/pascal.l
 	# $(LEX) $<

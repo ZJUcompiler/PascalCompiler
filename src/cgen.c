@@ -248,8 +248,11 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *id_2 = id_1->sibling;
                     TreeNode *exp = id_2->sibling->child;
                     genExp(exp, res1);
-                    /* fprintf(IR, "()") */
-                    // TODO
+                    symbolNode node = st_lookup(cur_domain, id_1->tokenString);
+                    symbolNode field = st_lookup(node->nextBucket, id_2->tokenString);
+                    fprintf(IR, "(add %s, %s, %s)\n", 
+                            id_1->tokenString, field->memloc,t0);
+                    fprintf(IR, "(asn %s, *%s, _)\n", res1, t0);
                     break;
                 }
             }
@@ -263,21 +266,44 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *id = tree->child;
                     // inline optimize TODO
                     if (!opt_inlineFlag)
-                        fprintf(IR, "(call, %s, _, _)\n", id->tokenString);
+                        fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
                 }
                 // proc_stmt: ID LP args_list RP
-                case 2:
+                case 2: {
+                    TreeNode *id = tree->child;
+                    TreeNode *p = id->sibling->child;
+                    while(p)
+                    {
+                        genExp(p, res1);
+                        fprintf(IR, "(arg %s, _, _)\n", res1);
+                    }
+                    fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
+                }
                 // proc_stmt: SYS_PROC
-                case 3:
+                case 3: {
+                    TreeNode *id = tree->child;
+                    fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
+                }
                 // proc_stmt: SYS_PROC LP expression_list RP
-                case 4:
+                case 4: {
+                    TreeNode *id = tree->child;
+                    TreeNode *p = id->sibling->child;
+                    while(p)
+                    {
+                        genExp(p, res1);
+                        fprintf(IR, "(arg %s, _, _)\n", res1);
+                    }
+                    fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
+                }
                 // proc_stmt: READ LP factor RP
-                case 5:
+                case 5: {
+                    
                     break;
+                }
             }
             break;
         case N_COMPOUND_STMT:
