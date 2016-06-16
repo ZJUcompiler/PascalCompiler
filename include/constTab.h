@@ -29,3 +29,5 @@ void ct_insert_real( char *label, float real);
 void ct_insert_str( char *label, char *str);
 
 ConstListNode *ct_lookup(char *ct_label);
+
+void ct_genConst();
