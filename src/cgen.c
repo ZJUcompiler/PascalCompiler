@@ -119,47 +119,47 @@ static void genExp( TreeNode *tree, const char *varId )
 
         genExp(p2, "t1");
 
-        // sprintf(IR, "(%s, %s, %s, %s)\n", toOpStr(tree->nodekind), "t0", "t1", varId);
+        // fprintf(IR, "(%s, %s, %s, %s)\n", toOpStr(tree->nodekind), "t0", "t1", varId);
         switch( tree->nodekind )
         {
             case N_EXP_GE: 
-                sprintf(IR, "(GE, t0, t1, %s)\n", varId);
+                fprintf(IR, "(GE, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_GT: 
-                sprintf(IR, "(GT, t0, t1, %s)\n", varId);
+                fprintf(IR, "(GT, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_LE: 
-                sprintf(IR, "(LE, t0, t1, %s)\n", varId);
+                fprintf(IR, "(LE, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_LT: 
-                sprintf(IR, "(LT, t0, t1, %s)\n", varId);
+                fprintf(IR, "(LT, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_EQUAL: 
-                sprintf(IR, "(EQ, t0, t1, %s)\n", varId);
+                fprintf(IR, "(EQ, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_UNEQUAL: 
-                sprintf(IR, "(NEQ, t0, t1, %s)\n", varId);
+                fprintf(IR, "(NEQ, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_PLUS: 
-                sprintf(IR, "(ADD, t0, t1, %s)\n", varId);
+                fprintf(IR, "(ADD, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_MINUS:
-                sprintf(IR, "(SUB, t0, t1, %s)\n", varId);
+                fprintf(IR, "(SUB, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_OR: 
-                sprintf(IR, "(OR, t0, t1, %s)\n", varId);
+                fprintf(IR, "(OR, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_MUL:
-                sprintf(IR, "(MUL, t0, t1, %s)\n", varId);
+                fprintf(IR, "(MUL, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_DIV:
-                sprintf(IR, "(DIV, t0, t1, %s)\n", varId);
+                fprintf(IR, "(DIV, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_MOD:
-                sprintf(IR, "(MOD, t0, t1, %s)\n", varId);
+                fprintf(IR, "(MOD, t0, t1, %s)\n", varId);
                 break;
             case N_EXP_AND:
-                sprintf(IR, "(AND, t0, t1, %s)\n", varId);
+                fprintf(IR, "(AND, t0, t1, %s)\n", varId);
                 break;
             default:
                 assert(0);
@@ -172,7 +172,7 @@ static void genExp( TreeNode *tree, const char *varId )
 
         // genExp(p1);
 
-        // sprintf(IR, "%s\n", );
+        // fprintf(IR, "%s\n", );
     }
     else if ( isArrK(tree) )
     {
@@ -183,8 +183,8 @@ static void genExp( TreeNode *tree, const char *varId )
         
         genExp(p2, "t1");
 
-        sprintf(IR, "(ADD, t0, t1, t0)\n");
-        sprintf(IR, "(ASN, *t0, %s, _)\n", varId);
+        fprintf(IR, "(ADD, t0, t1, t0)\n");
+        fprintf(IR, "(ASN, *t0, %s, _)\n", varId);
     }
     // function call
     else if ( isCallK(tree) )
@@ -196,10 +196,10 @@ static void genExp( TreeNode *tree, const char *varId )
         while (p_arg)
         {
             genExp(p_arg, "t0");
-            sprintf(IR, "(ARG, t0, _, _)\n");
+            fprintf(IR, "(ARG, t0, _, _)\n");
         }
         assert(strcmp(varId, "$v0")==0);
-        sprintf(IR, "(CALL, %s, _, _)\n", tree->tokenString);
+        fprintf(IR, "(CALL, %s, _, _)\n", tree->tokenString);
     }
     // not factor
     else if ( isNotFacK(tree) )
@@ -208,7 +208,7 @@ static void genExp( TreeNode *tree, const char *varId )
         p2 = p1->sibling;
 
         genExp(p2, "t0");
-        sprintf(IR, "(EQ, t0, 0, %s)\n", varId);
+        fprintf(IR, "(EQ, t0, 0, %s)\n", varId);
     }
     // minus factor
     else if ( isRevFacK(tree) )
@@ -217,21 +217,25 @@ static void genExp( TreeNode *tree, const char *varId )
         p2 = p1->sibling;
 
         genExp(p2, "t0");
-        sprintf(IR, "(SUB, 0, t0, %s)\n", varId);
+        fprintf(IR, "(SUB, 0, t0, %s)\n", varId);
     }
     // id or const
-    else if ( isIdK(tree) || isStringK(tree) ) 
-    {   // NOTE: strings are variables...
-        // and at the same time arrays of char with the first as #len
-        sprintf(IR, "(%s, %s, %s, _)\n", "ASN", tree->tokenString, varId);
+    else if ( isIdK(tree) ) 
+    {   
+        fprintf(IR, "(%s, %s, %s, _)\n", "ASN", tree->tokenString, varId);
     }
     else if ( isConstValK(tree) )
     {
-        sprintf(IR, "(%s, %s, %s, _)\n", "ASN", toConstVal(tree), varId);
+        fprintf(IR, "(%s, %s, %s, _)\n", "ASN", toConstVal(tree), varId);
+    }
+    else if ( isStringK(tree) )
+    {   // NOTE: strings are variables...
+        // and at the same time arrays of char with the first as #len
+        fprintf(IR, "(%s, '%s', %s, _)\n", "ASN", tree->tokenString, varId);
     }
     else if ( isCharK(tree) )
     {
-        sprintf(IR, "(ASN, %d, %s, _)\n", tree->tokenString[1], varId);
+        fprintf(IR, "(ASN, %d, %s, _)\n", tree->tokenString[1], varId);
     }
     else
     {
