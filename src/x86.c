@@ -112,9 +112,9 @@ static int labelCheck(char line[]) {
 }
 
 static void makeStack(int stackSize) {
-    fprintf(CODE, "pushl \%ebp\n");
-    fprintf(CODE, "movl \%esp, \%ebp\n");
-    fprintf(CODE, "subl $%d, \%esp\n", stackSize);
+    fprintf(CODE, "pushl %%ebp\n");
+    fprintf(CODE, "movl %%esp, %%ebp\n");
+    fprintf(CODE, "subl $%d, %%esp\n", stackSize);
 }
 
 static void genPreDecl() {
