@@ -131,10 +131,10 @@ static void foldConst(TreeNode *t)
     }
 }
 
-// void O0(TreeNode *tree)
-// {
-//     foldConst(tree);
-// }
+void O0(TreeNode *tree)
+{
+    foldConst(tree);
+}
 
 void O1(char *tacIr)
 {

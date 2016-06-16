@@ -14,14 +14,14 @@
 #define t3 "$t3"
 #define t4 "$t4"
 #define t5 "$t5"
-#define L1 "$L1"
-#define L2 "$L2" 
 
 static symbolNode *cur_domain = NULL;
 static int labelNum = 0;
 
-// static int label
 FILE *IR;
+
+static void genStmtList(TreeNode *tree);
+static void genFunc(TreeNode *tree);
 
 static void genExp( TreeNode *tree, const char *varId )
 {
@@ -119,6 +119,7 @@ static void genExp( TreeNode *tree, const char *varId )
         {
             genExp(p_arg, t0);
             fprintf(IR, "(arg %s, _, _)\n", t0);
+            p_arg = p_arg->sibling;
         }
         assert(strcmp(varId, "$v0")==0);    // TODO: function return
         fprintf(IR, "(call %s, _, _)\n", tree->tokenString);
@@ -156,7 +157,7 @@ static void genExp( TreeNode *tree, const char *varId )
         // genStmt handle memcpy() for string assignment
         // Strings should be assigned a label and put into the const area
         char label[32];
-        sprintf(label, "_$CONST$_L%d", ct_count);
+        sprintf(label, "_$CONST$_L%d\n", ct_count);
         fprintf(IR, "(asn %s, %s, _)\n", label, varId);
         ct_insert_str(tree->tokenString, label);
     }
@@ -214,7 +215,6 @@ int procStmtCheck(TreeNode *stmt) {
     }
 }
 
-static void genStmtList(TreeNode *tree);
 static void genStmt(TreeNode *tree) {
     NodeKind type = tree->nodekind;
     // TODO trace
@@ -277,6 +277,7 @@ static void genStmt(TreeNode *tree) {
                     {
                         genExp(p, res1);
                         fprintf(IR, "(arg %s, _, _)\n", res1);
+                        p = p->sibling;
                     }
                     fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
@@ -295,6 +296,7 @@ static void genStmt(TreeNode *tree) {
                     {
                         genExp(p, res1);
                         fprintf(IR, "(arg %s, _, _)\n", res1);
+                        p = p->sibling;
                     }
                     fprintf(IR, "(call %s, _, _)\n", id->tokenString);
                     break;
@@ -318,16 +320,19 @@ static void genStmt(TreeNode *tree) {
             TreeNode *stmt = tree->child->sibling;
             TreeNode *else_clause = stmt->sibling;
             genExp(exp, res1);
-            fprintf(IR, "(if_f %s, %s, _)\n", res1, L1);
+
+            int L1 = labelNum++;
+            fprintf(IR, "(if_f %s, _$JMP$_L%d, _)\n", res1, L1);
             genStmt(stmt->child);
             if (else_clause->child == NULL) {
-                fprintf(IR, "L1:\n");
+                fprintf(IR, "_$JMP$_L%d:\n", L1);
             }
             else {
-                fprintf(IR, "(jmp %s, _, _)\n", L2);
-                fprintf(IR, "L1:\n");
+                int L2 = labelNum++;
+                fprintf(IR, "(jmp _$JMP$_L%d, _, _)\n", L2);
+                fprintf(IR, "_$JMP$_L%d:\n", L1);
                 genStmt(else_clause->child);
-                fprintf(IR, "L2:\n");
+                fprintf(IR, "_$JMP$_L%d:\n", L2);
             }
             break;
         }
@@ -335,10 +340,11 @@ static void genStmt(TreeNode *tree) {
             // repeat
             TreeNode *stmt_list = tree->child;
             TreeNode *exp = stmt_list->sibling->child;
-            fprintf(IR, "L1:\n");
+            int L1 = labelNum++;
+            fprintf(IR, "_$JMP$_L%d:\n", L1);
             genStmtList(stmt_list);
             genExp(exp, res1);
-            fprintf(IR, "(if_f %s, %s, _)\n", res1, L1);
+            fprintf(IR, "(if_f %s, _$JMP$_%d, _)\n", res1, L1);
             break;
         }
         case N_WHILE_STMT: {
@@ -346,9 +352,13 @@ static void genStmt(TreeNode *tree) {
             TreeNode *exp = tree->child->child;
             TreeNode *stmt = tree->child->sibling;
             genExp(exp, res1);
-            fprintf(IR, "(if_f %s, %s, _)\n", res1, L1);
+            int L1 = labelNum++;
+            int L2 = labelNum++;
+            fprintf(IR, "_$JMP$_L%d:\n", L1);
+            fprintf(IR, "(if_f %s, _$JMP$_%d, _)\n", res1, L2);
             genStmt(stmt->child);
-            fprintf(IR, "L1:\n");
+            fprintf(IR, "jmp _$JMP$_L%d\n", L1);
+            fprintf(IR, "_$JMP$_L%d:\n", L2);
             break;
         }
         case N_FOR_STMT: {
@@ -358,18 +368,20 @@ static void genStmt(TreeNode *tree) {
             TreeNode *direct = id->sibling->sibling;
             TreeNode *exp2 = direct->sibling->child;
             TreeNode *stmt = direct->sibling->sibling;
+            int L1 = labelNum++;
+            int L2 = labelNum++;
             genExp(exp1, res1);
             genExp(exp2, res2);
             fprintf(IR, "(asn %s, %s, _)\n", res1, id->tokenString);
-            fprintf(IR, "L1:\n");
+            fprintf(IR, "_$JMP$_L%d:\n", L1);
             if (direct->nodekind == N_TO)
                 fprintf(IR, "(le %s, %s, %s)\n", id->tokenString, res2, t0);
             else if (direct->nodekind == N_DOWNTO)
                 fprintf(IR, "(ge %s, %s, %s)\n", id->tokenString, res2, t0);
-            fprintf(IR, "(if_f %s, %s, _)\n", t0, L2);
+            fprintf(IR, "(if_f %s, _$JMP$_L%d, _)\n", t0, L2);
             genStmt(stmt->child);
-            fprintf(IR, "jmp L1\n");
-            fprintf(IR, "L2:\n");
+            fprintf(IR, "jmp _$JMP$_L%d\n", L1);
+            fprintf(IR, "_$JMP$_L%d:\n", L2);
             break;
         }
         case N_CASE_STMT: {
@@ -377,22 +389,23 @@ static void genStmt(TreeNode *tree) {
             TreeNode *exp = tree->child->child;
             TreeNode *case_list = tree->child->sibling;
             TreeNode *case_expr = case_list->child;
+            int L1 = labelNum++;
             genExp(exp, res1);
             while (case_expr != NULL) {
                 TreeNode *ch1 = case_expr->child;
                 // case_expr: ID COLON stmt SEMI
                 if (ch1->nodekind == N_ID) {
                     fprintf(IR, "(eq %s, %s, %s)\n", res1, ch1->tokenString, res2);
-                    fprintf(IR, "(if_f %s, %s, _)\n", res2, L1);
+                    fprintf(IR, "(if_f %s, _$JMP$_L%d, _)\n", res2, L1);
                 }
                 // case_expr: const_value COLON stmt SEMI
                 else {
                     fprintf(IR, "(eq %s, %s, %s)\n", res1, ch1->tokenString, res2);
-                    fprintf(IR, "(if_f %s, %s, _)\n", res2, L1);
+                    fprintf(IR, "(if_f %s, _$JMP$_L%d, _)\n", res2, L1);
                 }
                 case_expr = case_expr->sibling;
             }
-            fprintf(IR, "L1:\n");
+            fprintf(IR, "_$JMP$_L%d:\n", L1);
             break;
         }
         case N_GOTO_STMT: {
@@ -415,13 +428,70 @@ static void genStmtList(TreeNode *tree) {
     }
 }
 
+static void genProc(TreeNode *tree)
+{
+    assert(tree->nodekind == N_PROCEDURE_DECL);
+    TreeNode *id = tree->child->child;
+    TreeNode *routine_head = tree->child->sibling->child;
+    TreeNode *stmt_list = routine_head->sibling;
+
+    symbolNode proc = st_lookup(cur_domain, id->tokenString);
+
+    cur_domain = proc->nextBucket;
+
+    TreeNode *p = routine_head->child->sibling->sibling->sibling->sibling->child;
+    while(p)
+    {
+        switch(p->nodekind)
+        {
+            case N_FUNCTION_DECL:
+                genFunc(p);
+                break;
+            case N_PROCEDURE_DECL:
+                genProc(p);
+                break;
+            default:
+                assert(0);
+        }
+        p = p->sibling;
+    }
+    fprintf(IR, "_$PROC$_%s\n", tree->tokenString);
+    genStmtList(stmt_list);
+
+    cur_domain = cur_domain[BUCKET_SIZE]->nextBucket;
+}
+
 static void genFunc(TreeNode *tree) {
     assert(tree->nodekind == N_FUNCTION_DECL);
     TreeNode *id = tree->child->child;
+    TreeNode *routine_head = tree->child->sibling->child;
+    TreeNode *stmt_list = routine_head->sibling;
+    
     symbolNode func = st_lookup(cur_domain, id->tokenString);
     
     cur_domain = func->nextBucket;
-    
+
+    TreeNode *p = routine_head->child->sibling->sibling->sibling->sibling->child;
+    while(p)
+    {
+        switch(p->nodekind)
+        {
+            case N_FUNCTION_DECL:
+                genFunc(p);
+                break;
+            case N_PROCEDURE_DECL:
+                genProc(p);
+                break;
+            default:
+                assert(0);
+        }
+        p = p->sibling;
+    }
+
+    fprintf(IR, "_$FUNC$_%s:\n", tree->tokenString);
+
+    genStmtList(stmt_list);
+    fprintf(IR, "ret %s)\n", tree->tokenString);
 
     cur_domain = cur_domain[BUCKET_SIZE]->nextBucket;
 }
@@ -430,5 +500,26 @@ static void codeGen( TreeNode *syntaxTree)
 {
     cur_domain = buckets;
     assert(syntaxTree->nodekind == N_PROGRAM);
+
+    TreeNode *routine_part = syntaxTree->child->sibling->child->child->sibling->sibling->sibling->sibling;
+    assert(routine_part->nodekind == N_ROUTINE_PART);
+
+    TreeNode *p = routine_part->child;
+    while(p)
+    {
+        switch(p->nodekind)
+        {
+            case N_FUNCTION_DECL:
+                genFunc(p);
+                break;
+            case N_PROCEDURE_DECL:
+                genProc(p);
+                break;
+            default:
+                assert(0);
+        }
+        p = p->sibling;
+    }
+
     genStmtList(syntaxTree->child->sibling->child->sibling);
 }
