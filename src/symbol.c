@@ -58,7 +58,7 @@ int get_type_by_name(char * name){
 
 
 /*初始化bucket*/
-void init_bucket(symbolNode bucket){
+void init_bucket(symbolNode* bucket){
 	int i;
 	for(i=0;i<BUCKET_SIZE+1;i++){
 		buckets[i] = NULL;
@@ -88,7 +88,7 @@ int look_type_part(TreeNode * typePart){
 	while(typeDefinition != NULL){
 		name = typeDefinition -> child;
 		typeDecl = name -> sibling -> child;
-		symbolNode node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type_check(name->sibling->child));//??????????
+		symbolNode node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type_check(name->sibling->child->tokenString));//??????????
 		insert_symbol(node);
 		typeDefinition = typeDefinition -> sibling;
 	}
