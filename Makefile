@@ -10,7 +10,7 @@ CFLAGS=-I$(IDIR)
 CLEANFILES=PasC parse tmp/* src/*.o
 
 _DEPS=globals.h util.h y.tab.h
-_OBJ=lex.yy.o main.o util.o y.tab.o cgen.o optimize.o symbol.o constTab.o
+_OBJ=lex.yy.o main.o util.o y.tab.o cgen.o optimize.o symbol.o constTab.o runtime.o
 DEPS=$(patsubst %, $(IDIR)/%, $(_DEPS))
 OBJ=$(patsubst %, $(ODIR)/%, $(_OBJ))
 

@@ -36,7 +36,7 @@ typedef struct symbolNodeCon{
 	symbolNode * nextBucket;//指向另外一个bucket，仅对函数和record有效
 } symbolNodeCon;
 
-extern symbolNode buckets[BUCKET_SIZE];
+extern symbolNode buckets[BUCKET_SIZE+1];
 
 int hash(char*);
 int type_check(char* name);

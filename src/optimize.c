@@ -1,9 +1,11 @@
 #include "globals.h"
 #include "util.h"
 
+static char *itoa(int);
+static char *ftoa(float);
+
 int opt_inlineFlag;
-/* 
-TODO: itoa 
+
 static void foldConst(TreeNode *t)
 {
     if ( !t || !(t->child) ) return;
@@ -121,14 +123,14 @@ static void foldConst(TreeNode *t)
         if (t->tokenString)
             free(t->tokenString);
         r = strcat(p1->tokenString, p2->tokenString);
-        t->tokenString = (char*)mallloc(strlen(r)+1);
+        t->tokenString = (char*)malloc(strlen(r)+1);
         strcpy(t->tokenString, r);
         t->child = NULL;
         deleteTreeNode(p2);
         deleteTreeNode(p1);
     }
 }
-*/
+
 // void O0(TreeNode *tree)
 // {
 //     foldConst(tree);
@@ -144,4 +146,18 @@ void O2(char *IR)
 {
     // TODO: tail recursion
     // TODO: inline function
+}
+
+static char *itoa(int i)
+{
+    char *s = (char*)malloc(16);
+    sprintf(s, "%d", i);
+    return s;
+}
+
+static char *ftoa(float f)
+{
+    char *s = (char*)malloc(16);
+    sprintf(s, "%f", f);
+    return s;
 }

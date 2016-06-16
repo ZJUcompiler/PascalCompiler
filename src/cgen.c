@@ -6,16 +6,16 @@
 #include "symbol.h"
 #include "optimize.h"
 
-#define res1 "t7"
-#define res2 "t6"
-#define t0 "t0"
-#define t1 "t1"
-#define t2 "t2"
-#define t3 "t3"
-#define t4 "t4"
-#define t5 "t5"
-#define L1 "L1"
-#define L2 "L2" 
+#define res1 "$t7"
+#define res2 "$t6"
+#define t0 "$t0"
+#define t1 "$t1"
+#define t2 "$t2"
+#define t3 "$t3"
+#define t4 "$t4"
+#define t5 "$t5"
+#define L1 "$L1"
+#define L2 "$L2" 
 
 static symbolNode *cur_domain = NULL;
 static int labelNum = 0;
@@ -413,6 +413,17 @@ static void genStmtList(TreeNode *tree) {
         genStmt(stmt->child);
         stmt = stmt->sibling;
     }
+}
+
+static void genFunc(TreeNode *tree) {
+    assert(tree->nodekind == N_FUNCTION_DECL);
+    TreeNode *id = tree->child->child;
+    symbolNode func = st_lookup(cur_domain, id->tokenString);
+    
+    cur_domain = func->nextBucket;
+    
+
+    cur_domain = cur_domain[BUCKET_SIZE]->nextBucket;
 }
 
 static void codeGen( TreeNode *syntaxTree)
