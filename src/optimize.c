@@ -1,25 +1,9 @@
 #include "globals.h"
 #include "util.h"
 
-inline int isConstValK( TreeNode *tree )
-{
-    return (tree->nodekind == N_INTEGER ||
-            tree->nodekind == N_REAL ||
-            // tree->nodekind == N_CHAR ||
-            // tree->nodekind == N_STRING ||
-            tree->nodekind == N_SYS_CON);
-}
 
-inline int isCharK( TreeNode *tree)
-{
-    return tree->nodekind == N_CHAR;
-}
-
-inline int isStringK( TreeNode *tree)
-{
-    return tree->nodekind == N_STRING;
-}
-
+/* 
+TODO: itoa 
 static void foldConst(TreeNode *t)
 {
     if ( !t || !(t->child) ) return;
@@ -144,11 +128,11 @@ static void foldConst(TreeNode *t)
         deleteTreeNode(p1);
     }
 }
-
-void O0(TreeNode *tree)
-{
-    foldConst(tree);
-}
+*/
+// void O0(TreeNode *tree)
+// {
+//     foldConst(tree);
+// }
 
 void O1(char *tacIr)
 {

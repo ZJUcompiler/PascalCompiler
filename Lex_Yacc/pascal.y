@@ -888,19 +888,16 @@ term : term MUL factor {
      | term DIV factor {
 					$$ = newTreeNode(N_EXP_DIV);
 					appendChild($$, $1);
-					appendChild($$, $2);
 					appendChild($$, $3);
 	 }
      | term MOD factor {
 					$$ = newTreeNode(N_EXP_MOD);
 					appendChild($$, $1);
-					appendChild($$, $2);
 					appendChild($$, $3);
 	 }
      | term AND factor {
 					$$ = newTreeNode(N_EXP_AND);
 					appendChild($$, $1);
-					appendChild($$, $2);
 					appendChild($$, $3);
 	 }
      | factor {
