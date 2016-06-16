@@ -120,7 +120,7 @@ static void foldConst(TreeNode *t)
                 r = itoa(atoi(toConstVal(p1))&&atoi(toConstVal(p2->tokenString)));
                 t->nodekind = N_INTEGER;
                 break;
-        } 
+        }
         if (t->tokenString)
             free(t->tokenString);
         t->tokenString = r;

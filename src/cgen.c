@@ -14,8 +14,6 @@
 #define L1 "L1"
 #define L2 "L2"
 
-static int labelNum = 0;
-static int label
 FILE *IR;
 
 inline int isOpK( TreeNode *tree)
@@ -268,7 +266,7 @@ static void codeGen( TreeNode *syntaxTree)
 
 }
 
-int assignStmtCheck(TreeNode *stmt) {
+static int assignStmtCheck(TreeNode *stmt) {
     TreeNode *id_1 = stmt->child;
     // assign_stmt: ID DOT ID ASSIGN expression
     if (id_1->sibling->nodekind == N_ID)
@@ -281,7 +279,7 @@ int assignStmtCheck(TreeNode *stmt) {
     return 2;
 }
 
-int procStmtCheck(TreeNode *stmt) {
+static int procStmtCheck(TreeNode *stmt) {
     switch (stmt->child) {
         case N_ID:
             TreeNode *id = stmt->child;
