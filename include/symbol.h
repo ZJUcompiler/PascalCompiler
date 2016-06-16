@@ -41,6 +41,16 @@ symbolNode* build_sym_tab(symbolNode* nodePointer);/*新建一张symbol table，
 void look_ast();
 int look_type_part(TreeNode * typePart);
 int look_var_part(TreeNode * varPart);
+int look_routine_part(TreeNode * routinePart);
+int look_stmt_list_part(TreeNode* stmtList);
+int look_proc_stmt(subStmt);
+int look_assign_stmt(subStmt);
+int look_while_stmt(subStmt);
+int look_for_stmt(subStmt);
+int look_repeat_stmt(subStmt);
+int look_goto_stmt(subStmt);
+int look_case_stmt(subStmt);
+int look_compound_stmt(subStmt);
 int insert_symbol(symbolNode node);
 sybolNode st_lookup(symbolNode*, char* name);
 symbolNode new_symbol_node(char* name, int def_line, int type);
