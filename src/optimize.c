@@ -71,7 +71,7 @@ static void foldConst(TreeNode *t)
                 }
                 break;
             case N_EXP_OR:
-                r = itoa(atoi(toConstVal(p1))||atoi(toConstVal(p2->tokenString)));
+                r = itoa( toConstVal(p1)||toConstVal(p2));
                 t->nodekind = N_INTEGER;
                 break;
             case N_EXP_MUL:
@@ -103,8 +103,11 @@ static void foldConst(TreeNode *t)
                 t->nodekind = N_INTEGER;
                 break;
             case N_EXP_AND:
-                r = itoa(atoi(toConstVal(p1))&&atoi(toConstVal(p2->tokenString)));
+                r = itoa( toConstVal(p1)&&toConstVal(p2));
                 t->nodekind = N_INTEGER;
+                break;
+            default:
+                assert(0);
                 break;
         }
         if (t->tokenString)
@@ -131,10 +134,10 @@ static void foldConst(TreeNode *t)
     }
 }
 
-// void O0(TreeNode *tree)
-// {
-//     foldConst(tree);
-// }
+void O0(TreeNode *tree)
+{
+    foldConst(tree);
+}
 
 void O1(char *tacIr)
 {

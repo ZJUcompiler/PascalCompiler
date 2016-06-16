@@ -1,6 +1,6 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
-	
+
 #include "globals.h"
 #include "util.h"
 

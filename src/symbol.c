@@ -142,32 +142,32 @@ int look_stmt_list_part(TreeNode* stmtList){
   while(stmt != NULL){
     subStmt = stmt -> child;
     /*判断是哪种语句*/
-    /*if( strcmp(subStmt -> name,"PROC_STMT") == 0){
+    if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){
       look_proc_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"ASSIGN_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){
       look_assign_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"WHILE_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"WHILE_STMT") == 0){
       look_while_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"FOR_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"FOR_STMT") == 0){
       look_for_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"REPEAT_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"REPEAT_STMT") == 0){
       look_repeat_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"GOTO_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"GOTO_STMT") == 0){
       look_goto_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"CASE_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"CASE_STMT") == 0){
       look_case_stmt(subStmt);
     }
-    else if(strcmp(subStmt -> name,"COMPOUND_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"COMPOUND_STMT") == 0){
       look_compound_stmt(subStmt);
     }
     else
-      return -1;*/
+      return -1;
   }
 }
 
