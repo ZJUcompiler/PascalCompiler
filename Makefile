@@ -7,7 +7,7 @@ ODIR=tmp
 DFLAGS=-ggdb -Wall
 CFLAGS=-I$(IDIR)
 # LDFLAGS=-l$(LIB1) -l$(LIB2) -l$(LIB3)
-CLEANFILES=PasC tmp/*
+CLEANFILES=PasC parse tmp/* src/*.o
 
 _DEPS=globals.h util.h y.tab.h
 _OBJ=lex.yy.o main.o util.o y.tab.o cgen.o optimize.o
@@ -20,7 +20,7 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 PasC: $(OBJ)
 	$(CC) $(DFLAGS) -o $@ $(OBJ) $(CFLAGS) # $(LDFLAGS)
 
-parse: $(SDIR)/main.o $(SDIR)/util.o $(SDIR)/y.tab.o $(SDIR)/lex.yy.o 
+parse: $(SDIR)/main.o $(SDIR)/util.o $(SDIR)/y.tab.o $(SDIR)/lex.yy.o
 	$(CC) $(DFLAGS) -o $@ $(CFLAGS) $^
 
 $(SDIR)/lex.yy.c: Lex_Yacc/pascal.l
