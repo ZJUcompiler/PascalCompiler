@@ -16,6 +16,7 @@
 #define Const 9
 
 #define REDEFINE "Redefinition of variable %s\n in line %d"
+#define NO_SUCH_SYMBOL "No such symbol named "
 
 typedef struct lineListCon{
 	int line;
@@ -38,11 +39,23 @@ typedef struct symbolNodeCon{
 extern symbolNode bucket[BUCKET_SIZE];
 
 int hash(char*);
+int type_check(char* name)
+int find_expression_type(TreeNode* expression)
 void init_bucket(symbolNode);
 symbolNode* build_sym_tab(symbolNode* nodePointer);/*新建一张symbol table，指针初始化为全空*/
 void look_ast();
 int look_type_part(TreeNode * typePart);
 int look_var_part(TreeNode * varPart);
+int look_routine_part(TreeNode * routinePart);
+int look_stmt_list_part(TreeNode* stmtList);
+int look_proc_stmt(subStmt);
+int look_assign_stmt(subStmt);
+int look_while_stmt(subStmt);
+int look_for_stmt(subStmt);
+int look_repeat_stmt(subStmt);
+int look_goto_stmt(subStmt);
+int look_case_stmt(subStmt);
+int look_compound_stmt(subStmt);
 int insert_symbol(symbolNode node);
 symbolNode st_lookup(symbolNode*, char* name);
 symbolNode new_symbol_node(char* name, int def_line, int type);
