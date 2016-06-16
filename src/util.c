@@ -346,19 +346,21 @@ char* getNodeKindString(NodeKind kind){
 	}
 }
 
-char *toConstVal( TreeNode *tree )
+int toConstVal( TreeNode *tree )
 {
     switch (tree->nodekind)
     {
-        case N_INTEGER: case N_REAL:
-            return tree->tokenString;
+        case N_INTEGER: 
+            return atoi(tree->tokenString);
+        case N_REAL:
+        	return (int)atof(tree->tokenString);
         case N_SYS_CON:
             if (strcmp(tree->tokenString, "true")==0)
-                return "1";    
+                return 1;    
             else if(strcmp(tree->tokenString, "maxint")==0)
-                return "2147483648";
+                return 2147483648;
             else if(strcmp(tree->tokenString, "false")==0)
-                return "0";
+                return 0;
             assert(0);
             break;
         default: 
