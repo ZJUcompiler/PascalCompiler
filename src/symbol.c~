@@ -64,6 +64,7 @@ void init_bucket(symbolNode* bucket){
 		buckets[i] = NULL;
 	}
   buckets[BUCKET_SIZE] = (symbolNode)malloc(sizeof(symbolNodeCon));
+  *buckets[BUCKET_SIZE]
 }
 
 /*新建一张symbol table*/
