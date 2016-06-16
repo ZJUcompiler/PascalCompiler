@@ -99,7 +99,7 @@ program_head : PROGRAM ID SEMI {
 			 	printError("missing <RPOGRAM NAME>");
 			 }
 			 | PROGRAM ID error{
-			 	printError("missing <SEMI>");
+			 	printError("missing ';'");
 			 };
 
 routine : routine_head routine_body {
@@ -112,7 +112,9 @@ routine : routine_head routine_body {
 			 */
 
 		}
-        ;
+        | routine_head error{
+			printError("missing program body");
+		};
 
 sub_routine : routine_head routine_body {
 				$$ = newTreeNode(N_ROUTINE);
@@ -124,7 +126,9 @@ sub_routine : routine_head routine_body {
 			 */
 
 			}
-            ;
+            | routine_head error{
+				printError("missing function body");
+			};
 
 routine_head : label_part const_part type_part var_part routine_part {
 				 $$ = newTreeNode(N_ROUTINE_HEAD);
@@ -152,6 +156,9 @@ const_part : CONST const_expr_list {
 		   | {
            		$$ = newTreeNode(N_CONST_PART);  //an N_CONST_PART with empty child
 		   }
+		   | CONST error{
+				printError("missing const expr list");
+			}
 		   ;
 
 const_expr_list : const_expr_list ID EQUAL const_value SEMI {
@@ -177,7 +184,10 @@ const_expr_list : const_expr_list ID EQUAL const_value SEMI {
 				 *			               N_ID       (N_INTEGER|N_REAL|N_CHAR|N_STRING|N_SYS_CON)
 				 */
 				}
-                ;
+                | ID EQUAL const_value error{
+				printError("missing ';'");
+				}
+		   		;
 
 const_value : INTEGER {
 				 $$ = $1;
@@ -194,7 +204,10 @@ const_value : INTEGER {
             | SYS_CON {
 				 $$ = $1;
 			}
-            ;
+            | error{
+				printError("illegal const value");
+			}
+		   ;
 
 type_part : TYPE type_decl_list {
 				 $$ = $2;
@@ -202,6 +215,10 @@ type_part : TYPE type_decl_list {
           | {
 				 $$ = newTreeNode(N_TYPE_PART);	 //an N_TYPE_PART with empty child
 		  }
+		  | TYPE error{
+				printError("missing type decl list");
+			}
+		   
 		  ;
 
 type_decl_list : type_decl_list type_definition {
@@ -228,6 +245,9 @@ type_definition : ID EQUAL type_decl SEMI {
 				 *			               N_ID      (N_SIMPLE_TYPE_DECL|N_ARRAY_TYPE_DECL|N_RECORD_TYPE_DECL)
 				 */
 		        }
+				| ID EQUAL type_decl error{
+					printError("missing ';'");
+				}
                 ;
 
 type_decl : simple_type_decl {
@@ -304,7 +324,14 @@ simple_type_decl : SYS_TYPE {
 				 *		/    	 \
 				 *	  N_ID   	N_ID
 				 */
-				 };
+				 }
+				 | LP name_list error {
+					printError("missing right parenthness");
+				}
+				 | ID DOTDOT error {
+				printError("missing identifier after ..");
+				}
+		   		;
 
 array_type_decl : ARRAY LB simple_type_decl RB OF type_decl {
 					$$ = newTreeNode(N_ARRAY_TYPE_DECL);
@@ -315,11 +342,26 @@ array_type_decl : ARRAY LB simple_type_decl RB OF type_decl {
 				 *	  N_SIMPLE_TYPE_DECL   		(N_SIMPLE_TYPE_DECL|N_ARRAY_TYPE_DECL|N_RECORD_TYPE_DECL)
 				 */
 				}
+				| ARRAY error simple_type_decl RB OF type_decl{
+					printError("missing left barcket");
+				}
+				| ARRAY LB simple_type_decl error OF type_decl{
+					printError("missing right barcket");
+				}
+				| ARRAY LB simple_type_decl RB error type_decl{
+					printError("missing 'OF' after right barcket");
+				}
+				| ARRAY LB simple_type_decl RB OF error{
+					printError("missing type declarations");
+				}
 				;
 
 record_type_decl : RECORD field_decl_list END {
 				 	$$ = $2;
-				 }
+				 } 
+				 | RECORD field_decl_list error {
+					 printError("missing closing 'end'");
+				}
                  ;
 
 field_decl_list : field_decl_list field_decl {
@@ -345,6 +387,12 @@ field_decl : name_list COLON type_decl SEMI {
 				 *			N_NAME_LIST   (N_SIMPLE_TYPE_DECL|N_ARRAY_TYPE_DECL|N_RECORD_TYPE_DECL)
 				 */
 		   }
+			| name_list COLON type_decl error{
+				printError("missing ';'");
+			}
+			| name_list error type_decl SEMI{
+				printError("missing ':'");
+			}
            ;
 
 name_list : name_list COMMA ID {
@@ -359,6 +407,12 @@ name_list : name_list COMMA ID {
 			$$ = newTreeNode(N_NAME_LIST);
 		 	appendChild($$, $1);
 		  }
+		  | name_list error ID {
+				printError("missing ','");
+			}
+		  | name_list COMMA error {
+				printError("missing identifier");
+		  }			
           ;
 
 var_part : VAR var_decl_list {
@@ -366,7 +420,11 @@ var_part : VAR var_decl_list {
 		 }
          | {
 			$$ = newTreeNode(N_VAR_PART); //empty var part
-		 };
+		 }
+		 | VAR error{
+				printError("missing var declaration list");
+		}
+			;
 
 var_decl_list : var_decl_list var_decl {
 				  $$ = $1;
@@ -389,7 +447,13 @@ var_decl : name_list COLON type_decl SEMI {
 			 *			/	     		\
 			 *			N_NAME_LIST   	(N_SIMPLE_TYPE_DECL|N_ARRAY_TYPE_DECL|N_RECORD_TYPE_DECL)
 			 */
-		 }
+		 } 
+		| name_list error type_decl SEMI{
+			printError("missing ':'");
+		}
+		| name_list COLON type_decl error{
+			printError("missing ';'");
+		}
          ;
 
 routine_part : routine_part function_decl {
@@ -426,6 +490,12 @@ function_decl : function_head SEMI sub_routine SEMI {
 			 *		N_FUNCTION_HEAD 	N_ROUTINE
 			 */
 			  }
+			| function_head error sub_routine SEMI{
+				printError("missing ';'");		
+			}
+			| function_head SEMI sub_routine error{
+				printError("missing ';'");		
+			}
               ;
 
 function_head : FUNCTION ID parameters COLON simple_type_decl {
@@ -437,6 +507,15 @@ function_head : FUNCTION ID parameters COLON simple_type_decl {
 			 *			/	   |  				\
 			 *		  N_ID	 N_PARAMETERS	N_SIMPLE_TYPE_DECL
 			 */
+			  } 
+			  | FUNCTION error parameters COLON simple_type_decl{
+					printError("missing function name");				  
+			  }
+			  | FUNCTION ID parameters error simple_type_decl{
+					printError("missing ':'");				  
+			  }
+			  | FUNCTION ID parameters COLON error{
+					printError("missing function type declaration");				  
 			  }
               ;
 
@@ -449,6 +528,12 @@ procedure_decl : procedure_head SEMI sub_routine SEMI {
 			 *		N_PROCEDURE_HEAD	N_ROUTINE
 			 */
 			   }
+			| procedure_head error sub_routine SEMI{
+				printError("missing ';'");		
+			}
+			| procedure_head SEMI sub_routine error{
+				printError("missing ';'");		
+			}
                ;
 
 procedure_head : PROCEDURE ID parameters {
@@ -461,6 +546,9 @@ procedure_head : PROCEDURE ID parameters {
 			 *		  N_ID	 N_PARAMETERS
 			 */
 			   }
+				| PROCEDURE error parameters{
+					printError("missing procedure name");	
+				}
                ;
 
 parameters : LP para_decl_list RP {
@@ -473,6 +561,9 @@ parameters : LP para_decl_list RP {
 			 *			N_PARA_TYPE  N_PARA_TYPE ....    N_PARA_TYPE
 			 */
 		   }
+			| LP para_decl_list error{
+					printError("missing right paretheses");	
+			}
            ;
 
 para_decl_list : para_decl_list SEMI para_type_list {
@@ -483,6 +574,9 @@ para_decl_list : para_decl_list SEMI para_type_list {
 					$$ = newTreeNode(N_PARAMETERS);
 		 			appendChild($$, $1);
 			   }
+			   | para_decl_list error para_type_list{
+					printError("missing ';'");	
+				}
                ;
 
 para_type_list : var_para_list COLON simple_type_decl {
@@ -518,8 +612,7 @@ routine_body : compound_stmt {
 
 compound_stmt : BEGINN stmt_list END {
 					$$ = $2;
-			  }
-              ;
+			  };
 
 stmt_list : stmt_list  stmt  SEMI {
 			$$ = $1;
@@ -669,6 +762,19 @@ proc_stmt : ID {
 			 *			 N_FACTOR
 			 */
 		  }
+		  | ID LP args_list error{
+				printError("missing right paretheses");
+			}
+		  | READ LP factor error{
+				printError("missing right paretheses");	  
+		  }
+		  | SYS_PROC LP expression_list error {
+
+				printError("missing right paretheses");	
+		  }
+		  | READ error factor RP{
+				printError("missing left paretheses");	  
+		  }
           ;
 
 if_stmt : IF expression THEN stmt else_clause {
@@ -757,7 +863,13 @@ case_stmt : CASE expression OF case_expr_list END {
 			 *		/      	 \
 			 * N_EXPRESSION N_CASE_EXPR_LIST
 			 */
-		  }
+		  } 
+		  | CASE expression OF case_expr_list error{
+					printError("missing 'end'");		  
+			}
+			| CASE expression error case_expr_list END{
+					printError("missing 'of'");		  
+			}
           ;
 
 case_expr_list : case_expr_list case_expr {
@@ -792,7 +904,10 @@ case_expr : const_value COLON stmt SEMI {
 			 *		/	     \
 			 * 	  N_ID   N_STMT
 			 */
-		  }
+		  } 
+		  | const_value COLON stmt error{
+				printError("missing ';'");	
+			}
           ;
 
 goto_stmt : GOTO INTEGER {
