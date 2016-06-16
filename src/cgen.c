@@ -15,106 +15,8 @@
 #define L2 "L2"
 
 static int labelNum = 0;
-static int label
+// static int label
 FILE *IR;
-
-inline int isOpK( TreeNode *tree)
-{
-    return ((tree->nodekind == N_EXP_GE) ||
-            (tree->nodekind == N_EXP_GT) ||
-            (tree->nodekind == N_EXP_LE) ||
-            (tree->nodekind == N_EXP_LT) ||
-            (tree->nodekind == N_EXP_EQUAL) ||
-            (tree->nodekind == N_EXP_UNEQUAL) ||
-            (tree->nodekind == N_EXP_PLUS) ||
-            (tree->nodekind == N_EXP_MINUS) ||
-            (tree->nodekind == N_EXP_OR) ||
-            (tree->nodekind == N_EXP_MUL) ||
-            (tree->nodekind == N_EXP_DIV) ||
-            (tree->nodekind == N_EXP_MOD) ||
-            (tree->nodekind == N_EXP_AND));
-}
-
-inline int isRecK( TreeNode *tree )
-{
-    return (tree->nChild == 2) && 
-            (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_ID) &&
-            (tree->child->sibling->nodekind == N_ID);
-}
-
-inline int isArrK( TreeNode *tree )
-{
-    return (tree->nChild == 2) && 
-            (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_ID) &&
-            (tree->child->sibling->nodekind == N_EXPRESSION);
-}
-
-inline int isCallK( TreeNode *tree )
-{
-    return (tree->nChild == 2) && 
-            (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_ID) &&
-            (tree->child->sibling->nodekind == N_ARGS_LIST);
-}
-
-inline int isNotFacK( TreeNode *tree )
-{
-    return (tree->nChild == 2) && 
-            (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_NOT) &&
-            (tree->child->sibling->nodekind == N_FACTOR);
-}
-
-inline int isRevFacK( TreeNode *tree )
-{
-    return (tree->nChild == 2) && 
-            (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_MINUS) &&
-            (tree->child->sibling->nodekind == N_FACTOR);
-}
-
-inline int isIdK( TreeNode *tree )
-{
-    return (tree->nodekind == N_ID);
-}
-
-inline int isConstValK( TreeNode *tree )
-{
-    return (tree->nodekind == N_INTEGER ||
-            tree->nodekind == N_REAL ||
-            // tree->nodekind == N_CHAR ||
-            // tree->nodekind == N_STRING ||
-            tree->nodekind == N_SYS_CON);
-}
-
-inline int isCharK( TreeNode *tree)
-{
-    return tree->nodekind == N_CHAR;
-}
-
-inline int isStringK( TreeNode *tree)
-{
-    return tree->nodekind == N_STRING;
-}
-
-inline int isExpK( TreeNode *tree )
-{
-    return isOpK(tree) || isExpK(tree) ||
-        isRecK(tree) || isArrK(tree) ||
-        isCallK(tree) || isRevFacK(tree) ||
-        isNotFacK(tree) || isIdK(tree) ||
-        isConstValK(tree) || isCharK(tree) ||
-        isStringK(tree);
-}
-
-static char *IR;
-
-static void genStmt( TreeNode *tree )
-{
-
-}
 
 static void genExp( TreeNode *tree, const char *varId )
 {
@@ -242,9 +144,9 @@ static void genExp( TreeNode *tree, const char *varId )
         fprintf(IR, "(%s, %s, %s, _)\n", "ASN", toConstVal(tree), varId);
     }
     else if ( isStringK(tree) )
-    {   // NOTE: strings are variables...
-        // and at the same time arrays of char with the first as #len
-        fprintf(IR, "(%s, '%s', %s, _)\n", "ASN", tree->tokenString, varId);
+    {   
+        // Strings should be assigned a label and put into the const area
+        // fprintf(IR, "(%s, '%s', %s, _)\n", "ASN", tree->tokenString, varId);
     }
     else if ( isCharK(tree) )
     {
@@ -256,17 +158,6 @@ static void genExp( TreeNode *tree, const char *varId )
     }
 }
 
-static void cGen( TreeNode *tree )
-{
-    assert(tree);
-
-    // TODO: skipping redundent nodes
-}
-
-static void codeGen( TreeNode *syntaxTree)
-{
-
-}
 
 int assignStmtCheck(TreeNode *stmt) {
     TreeNode *id_1 = stmt->child;
@@ -465,4 +356,16 @@ static void genStmtList(TreeNode *tree) {
         genStmt(stmt->child);
         stmt = stmt->sibling;
     }
+}
+
+static void cGen( TreeNode *tree )
+{
+    assert(tree);
+
+    // TODO: skipping redundent nodes
+}
+
+static void codeGen( TreeNode *syntaxTree)
+{
+
 }

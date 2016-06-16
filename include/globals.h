@@ -122,7 +122,7 @@ typedef struct treeNode{
 	struct treeNode * child;
 	struct treeNode * sibling;
     int lineno;
-
+    int nChild;
 	NodeKind nodekind;
 	char *tokenString;
 } TreeNode;
