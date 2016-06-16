@@ -250,7 +250,7 @@ static void genStmt(TreeNode *tree) {
                     genExp(exp, res1);
                     symbolNode node = st_lookup(cur_domain, id_1->tokenString);
                     symbolNode field = st_lookup(node->nextBucket, id_2->tokenString);
-                    fprintf(IR, "(add %s, %s, %s)\n", 
+                    fprintf(IR, "(add %s, %d, %s)\n", 
                             id_1->tokenString, field->memloc,t0);
                     fprintf(IR, "(asn %s, *%s, _)\n", res1, t0);
                     break;
@@ -301,7 +301,9 @@ static void genStmt(TreeNode *tree) {
                 }
                 // proc_stmt: READ LP factor RP
                 case 5: {
-                    
+                    // TODO
+                    // NOTE: read record?
+                    // fprintf(IR, "(call %s, _, _)\n", );   
                     break;
                 }
             }
@@ -412,13 +414,6 @@ static void genStmtList(TreeNode *tree) {
         stmt = stmt->sibling;
     }
 }
-
-// static void cGen( TreeNode *tree )
-// {
-//     assert(tree);
-
-//     // TODO: skipping redundent nodes
-// }
 
 static void codeGen( TreeNode *syntaxTree)
 {
