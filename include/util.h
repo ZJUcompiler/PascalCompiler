@@ -10,9 +10,9 @@ TreeNode *newTokenTreeNode(NodeKind kind, char* tokenString);
 void printTreeNode(TreeNode* treeNode);
 char* getNodeKindString(NodeKind kind);
 void deleteTreeNode(TreeNode *t);
-char *toConstVal(TreeNode *t);
+int toConstVal(TreeNode *t);
 
-inline int isOpK( TreeNode *tree)
+inline static int isOpK( TreeNode *tree)
 {
     return ((tree->nodekind == N_EXP_GE) ||
             (tree->nodekind == N_EXP_GT) ||
@@ -29,7 +29,7 @@ inline int isOpK( TreeNode *tree)
             (tree->nodekind == N_EXP_AND));
 }
 
-inline int isRecK( TreeNode *tree )
+inline static int isRecK( TreeNode *tree )
 {
     return (tree->nChild == 2) && 
             (tree->nodekind == N_FACTOR) &&
@@ -37,7 +37,7 @@ inline int isRecK( TreeNode *tree )
             (tree->child->sibling->nodekind == N_ID);
 }
 
-inline int isArrK( TreeNode *tree )
+inline static int isArrK( TreeNode *tree )
 {
     return (tree->nChild == 2) && 
             (tree->nodekind == N_FACTOR) &&
@@ -45,7 +45,7 @@ inline int isArrK( TreeNode *tree )
             (tree->child->sibling->nodekind == N_EXPRESSION);
 }
 
-inline int isCallK( TreeNode *tree )
+inline static int isCallK( TreeNode *tree )
 {
     return (tree->nChild == 2) && 
             (tree->nodekind == N_FACTOR) &&
@@ -53,7 +53,7 @@ inline int isCallK( TreeNode *tree )
             (tree->child->sibling->nodekind == N_ARGS_LIST);
 }
 
-inline int isNotFacK( TreeNode *tree )
+inline static int isNotFacK( TreeNode *tree )
 {
     return (tree->nChild == 2) && 
             (tree->nodekind == N_FACTOR) &&
@@ -61,7 +61,7 @@ inline int isNotFacK( TreeNode *tree )
             (tree->child->sibling->nodekind == N_FACTOR);
 }
 
-inline int isRevFacK( TreeNode *tree )
+inline static int isRevFacK( TreeNode *tree )
 {
     return (tree->nChild == 2) && 
             (tree->nodekind == N_FACTOR) &&
@@ -69,12 +69,12 @@ inline int isRevFacK( TreeNode *tree )
             (tree->child->sibling->nodekind == N_FACTOR);
 }
 
-inline int isIdK( TreeNode *tree )
+inline static int isIdK( TreeNode *tree )
 {
     return (tree->nodekind == N_ID);
 }
 
-inline int isConstValK( TreeNode *tree )
+inline static int isConstValK( TreeNode *tree )
 {
     return (tree->nodekind == N_INTEGER ||
             tree->nodekind == N_REAL ||
@@ -83,17 +83,17 @@ inline int isConstValK( TreeNode *tree )
             tree->nodekind == N_SYS_CON);
 }
 
-inline int isCharK( TreeNode *tree)
+inline static int isCharK( TreeNode *tree)
 {
     return tree->nodekind == N_CHAR;
 }
 
-inline int isStringK( TreeNode *tree)
+inline static int isStringK( TreeNode *tree)
 {
     return tree->nodekind == N_STRING;
 }
 
-inline int isExpK( TreeNode *tree )
+inline static int isExpK( TreeNode *tree )
 {
     return isOpK(tree) || isExpK(tree) ||
         isRecK(tree) || isArrK(tree) ||
