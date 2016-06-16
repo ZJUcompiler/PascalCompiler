@@ -125,6 +125,7 @@ typedef struct treeNode{
     int nChild;
 	NodeKind nodekind;
 	char *tokenString;
+	int type;
 } TreeNode;
 
 extern int lineno;
