@@ -428,7 +428,7 @@ static void genFunc(TreeNode *tree) {
 
 static void codeGen( TreeNode *syntaxTree)
 {
-    cur_domain = bucket;
+    cur_domain = buckets;
     assert(syntaxTree->nodekind == N_PROGRAM);
     genStmtList(syntaxTree->child->sibling->child->sibling);
 }

@@ -4,6 +4,8 @@
 static char *itoa(int);
 static char *ftoa(float);
 
+int opt_inlineFlag;
+
 static void foldConst(TreeNode *t)
 {
     if ( !t || !(t->child) ) return;
