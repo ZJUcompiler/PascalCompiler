@@ -16,7 +16,7 @@ function funcname(a,b:integer; c,d:char):integer;
 var 
 	funca:integer;
 	funcb:char;
-type 
+type
 	funcnam = string;
 	funcmm = integer;
 begin
