@@ -10,7 +10,7 @@ int hash(char* str){
 	int i, ans=0;	
 	int length = strlen(str);
 	for(i=0;i<length;i++){
-		ans += str[i]*(i+1)
+		ans += str[i]*(i+1);
 	}
 	ans = ans % BUCKET_SIZE;
 	return ans;
@@ -46,12 +46,12 @@ int find_expression_type(TreeNode* expression){
 /*根据符号名得到变量的类型，没有找到这个符号就返回-1*/
 int get_type_by_name(char * name){
   int hashValue = hash(name);
-  symbolNode = *(now + hashValue);
-  while(symbolNode != NULL){
-    if(strcmp(name, symbolNode->name) == 0){
-      return type;
+  symbolNode node= *(now + hashValue);
+  while(node != NULL){
+    if(strcmp(name, node->name) == 0){
+      return node->type;
     }
-    symbolNode = symbolNode -> nextNode;
+    node = node -> nextNode;
   }
   return -1;//没有这个定义
 }
@@ -63,7 +63,7 @@ void init_bucket(symbolNode bucket){
 	for(i=0;i<BUCKET_SIZE+1;i++){
 		buckets[i] = NULL;
 	}
-  buckets[BUCKET_SIZE] = (symboleNode*)malloc(sizeof());
+  buckets[BUCKET_SIZE] = (symbolNode)malloc(sizeof(symbolNodeCon));
 }
 
 /*新建一张symbol table*/
@@ -142,7 +142,7 @@ int look_stmt_list_part(TreeNode* stmtList){
   while(stmt != NULL){
     subStmt = stmt -> child;
     /*判断是哪种语句*/
-    if( strcmp(subStmt -> name,"PROC_STMT") == 0){
+    /*if( strcmp(subStmt -> name,"PROC_STMT") == 0){
       look_proc_stmt(subStmt);
     }
     else if(strcmp(subStmt -> name,"ASSIGN_STMT") == 0){
@@ -167,16 +167,16 @@ int look_stmt_list_part(TreeNode* stmtList){
       look_compound_stmt(subStmt);
     }
     else
-      return -1;
+      return -1;*/
   }
 }
 
 
-int look_proc_stmt(subStmt){
+int look_proc_stmt(TreeNode* subStmt){
   return 0;  
 }
 /*赋值表达式类型检查*/
-int look_assign_stmt(subStmt){
+int look_assign_stmt(TreeNode* subStmt){
   TreeNode* id = subStmt -> child;
   TreeNode* expression = id->sibling;
   int variableType = get_type_by_name(id->tokenString);
@@ -186,22 +186,22 @@ int look_assign_stmt(subStmt){
   return 0;  
 }
 
-int look_while_stmt(subStmt){
+int look_while_stmt(TreeNode* subStmt){
   return 0;  
 }
-int look_for_stmt(subStmt){
+int look_for_stmt(TreeNode* subStmt){
   return 0;  
 }
-int look_repeat_stmt(subStmt){
+int look_repeat_stmt(TreeNode* subStmt){
   return 0;  
 }
-int look_goto_stmt(subStmt){
+int look_goto_stmt(TreeNode* subStmt){
   return 0;  
 }
-int look_case_stmt(subStmt){
+int look_case_stmt(TreeNode* subStmt){
   return 0;  
 }
-int look_compound_stmt(subStmt){
+int look_compound_stmt(TreeNode* subStmt){
   return 0;  
 }
 
@@ -243,8 +243,12 @@ symbolNode new_symbol_node(char* name, int def_line, int type, int length, int t
 	return node;
 }
 
-int semantic_routine_head(TreeNode* routineHead);
-int semantic_routine_stmt(TreeNode* routineStmt);
+int semantic_routine_head(TreeNode* routineHead){
+  return 0;
+}
+int semantic_routine_stmt(TreeNode* routineStmt){
+  return 0;
+}
 
 int semantic_analysis(TreeNode* root){
 	TreeNode* routine = root -> child -> sibling;
@@ -252,6 +256,7 @@ int semantic_analysis(TreeNode* root){
 	TreeNode* routineStmt = routineHead -> sibling;
 	semantic_routine_head(routineHead);
 	semantic_routine_stmt(routineStmt);
+  return 0;
 }
 
 

@@ -1,7 +1,7 @@
 #include "globals.h"
 #include "util.h"
 
-
+int opt_inlineFlag;
 /* 
 TODO: itoa 
 static void foldConst(TreeNode *t)

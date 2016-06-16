@@ -36,7 +36,7 @@ typedef struct symbolNodeCon{
 	symbolNode * nextBucket;//指向另外一个bucket，仅对函数和record有效
 } symbolNodeCon;
 
-extern symbolNode bucket[BUCKET_SIZE];
+extern symbolNode buckets[BUCKET_SIZE];
 
 int hash(char*);
 int type_check(char* name);
@@ -58,10 +58,10 @@ int look_case_stmt(TreeNode* subStmt);
 int look_compound_stmt(TreeNode* subStmt);
 int insert_symbol(symbolNode node);
 symbolNode st_lookup(symbolNode*, char* name);
-symbolNode new_symbol_node(char* name, int def_line, int type);
+symbolNode new_symbol_node(char* name, int def_line, int type, int length, int type_const_arrayType);
 int semantic_routine_head(TreeNode* routineHead);
 int semantic_routine_stmt(TreeNode* routineStmt);
 
-int semantic_analysis(TreeNode root);
+int semantic_analysis(TreeNode* root);
 
 #endif
