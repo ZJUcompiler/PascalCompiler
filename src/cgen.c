@@ -86,7 +86,6 @@ static void genExp( TreeNode *tree, const char *varId )
     }
     else if ( isRecK(tree) ) 
     {
-        // TODO: record access
         p1 = tree->child;
         p2 = p1->sibling;
 
@@ -398,5 +397,6 @@ static void genStmtList(TreeNode *tree) {
 static void codeGen( TreeNode *syntaxTree)
 {
     cur_domain = bucket;
-    genStmtList(syntaxTree);
+    assert(syntaxTree->nodekind == N_PROGRAM);
+    genStmtList(syntaxTree->child->sibling->child->sibling);
 }

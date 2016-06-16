@@ -20,14 +20,14 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 PasC: $(OBJ)
 	$(CC) $(DFLAGS) -o $@ $(OBJ) $(CFLAGS) # $(LDFLAGS)
 
-parse: $(SDIR)/main.o $(SDIR)/util.o $(SDIR)/y.tab.o $(SDIR)/lex.yy.o
+parse: $(ODIR)/main.o $(ODIR)/util.o $(ODIR)/y.tab.o $(ODIR)/lex.yy.o
 	$(CC) $(DFLAGS) -o $@ $(CFLAGS) $^
 
-$(SDIR)/lex.yy.c: Lex_Yacc/pascal.l
-	$(LEX) $<
+# $(SDIR)/lex.yy.c: Lex_Yacc/pascal.l
+	# $(LEX) $<
 
-$(SDIR)/y.tab.c $(IDIR)/y.tab.h: Lex_Yacc/pascal.y
-	$(YACC) $<
+# $(SDIR)/y.tab.c $(IDIR)/y.tab.h: Lex_Yacc/pascal.y
+	# $(YACC) $<
 
 clean:
 	rm -f $(CLEANFILES)

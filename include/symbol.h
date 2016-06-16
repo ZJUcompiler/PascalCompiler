@@ -32,8 +32,10 @@ typedef struct symbolNodeCon{
 	int length;//数组长度，仅对数组有效
 	int type_const_arrayType;//数组的元素类型，仅对数组有效
 	struct symbolNodeCon* nextNode;//指向链表中下一个symbol node
-	struct symbolNode * nextBucket;//指向另外一个bucket，仅对函数和record有效
+	symbolNode * nextBucket;//指向另外一个bucket，仅对函数和record有效
 } symbolNodeCon;
+
+extern symbolNode bucket[BUCKET_SIZE];
 
 int hash(char*);
 void init_bucket(symbolNode);
@@ -42,7 +44,7 @@ void look_ast();
 int look_type_part(TreeNode * typePart);
 int look_var_part(TreeNode * varPart);
 int insert_symbol(symbolNode node);
-sybolNode st_lookup(symbolNode*, char* name);
+symbolNode st_lookup(symbolNode*, char* name);
 symbolNode new_symbol_node(char* name, int def_line, int type);
 int semantic_routine_head(TreeNode* routineHead);
 int semantic_routine_stmt(TreeNode* routineStmt);
