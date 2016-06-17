@@ -549,17 +549,33 @@ int look_proc_stmt(TreeNode* subStmt){
 int look_assign_stmt(TreeNode* subStmt){
   TreeNode* id = subStmt -> child;
   TreeNode* expression = id->sibling;
+  TreeNode* index = NULL;
+  if(expression -> sibling != NULL){//数组下表访问
+    index = expression;
+    expression = expression ->sibling;
+    index -> type = get_expression_type(index);
+  }
+  else{//正常变量
+    index = NULL;
+  }
   int variableType = get_type_by_name(id->tokenString);
   printf("%s %d\n",id->tokenString, variableType);
-  if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){
+  if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){//写的不是变量
     fprintf(ERR, ILLEGAL_LEFT_VALUE,-520);
+    return -1;
   }
-  if(variableType ==  -1){
+  if(variableType == -1){//变量不存在
     fprintf(ERR,"line %d: %s \'%s\'\n", id->lineno,NO_SUCH_SYMBOL, id->tokenString );
+    return -1;
+  }
+  else if(variableType == Array){
+    symbolNode ele = st_lookup(now, id->tokenString);
+    variableType = ele -> type_const_arrayType;
+    id -> type = variableType;
   }
   int expressionType = get_expression_type(expression);
   //printf("aa");
-  if( expressionType != variableType){
+  if( expressionType != variableType){//变量类型和表达式类型不同
     fprintf(ERR, TYPEMIXED2,-519,type_string(variableType),type_string(expressionType));
     return -1;
   }
