@@ -41,7 +41,8 @@ typedef struct symbolNodeCon{
 extern symbolNode buckets[BUCKET_SIZE+1];
 
 int hash(char*);
-void add_loc_by_type(int);//根据给出的类型自动增加memloc
+int str2int(char*);
+void add_loc_by_type(int,int);//根据给出的类型自动增加memloc
 int type_check(char* name);
 char* type_string(int type);
 int find_expression_type(TreeNode* expression);
@@ -52,6 +53,7 @@ int look_const_part(TreeNode * constPart);
 int look_type_part(TreeNode * typePart);
 int look_var_part(TreeNode * varPart);
 int look_routine_part(TreeNode * routinePart);
+symbolNode look_array_decl(char* name, int size, int type);
 int look_params(TreeNode* parameters);//函数的参数分析
 int look_func_decl(TreeNode* funcOrProcDecl);//函数或者过程的分析
 int look_proc_decl(TreeNode* funcOrProcDecl);

@@ -54,7 +54,7 @@ void printTreeNode(TreeNode* treeNode){
 	char *name = getNodeKindString(treeNode->nodekind);
 	int isTerm = isTerminal(treeNode->nodekind);
 	if (isTerm)
-		printf("<%s>[%s]\n", name, treeNode->tokenString);
+		printf("<%s>[%s](%s)\n", name, treeNode->tokenString, type_string(treeNode->type));
 	else
 		printf("%s\n", name);
 }

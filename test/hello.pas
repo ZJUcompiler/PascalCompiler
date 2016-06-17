@@ -4,14 +4,12 @@ const
 	kk = 4;
 type
 	name = string;
-	vector = array [ 1..25] of real; 
 var bb, bbb, b : char ;
 	c : integer;
 	A : integer;
 	d : real;
 	e : boolean;
-	f : name;
-  velocity : vector;
+  velocity : array [ 1..25] of real; 
 function funcname(a,b:integer; c,d:char):integer;
 var 
 	funca:integer;
