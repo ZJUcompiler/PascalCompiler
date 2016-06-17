@@ -1,4 +1,4 @@
 #pragma once
 
 FILE *CODE;
-int genX86Asm(FILE *IR);
+void genX86Asm(FILE *IR);
