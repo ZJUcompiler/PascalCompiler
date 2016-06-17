@@ -54,7 +54,7 @@ int get_sonex_type(TreeNode* exp);
 int get_exp_cal_type(TreeNode* exp);
 int hash(char*);
 int str2int(char*);
-void add_loc_by_type(int,int);//根据给出的类型自动增加memloc
+void add_loc_by_type(int,int,int);//根据给出的类型自动增加memloc
 int type_check(char* name);
 char* type_string(int type);
 int find_expression_type(TreeNode* expression);
@@ -73,6 +73,7 @@ int look_stmt_list_part(TreeNode* stmtList);
 int look_proc_stmt(TreeNode* subStmt);
 int look_assign_stmt(TreeNode* subStmt);
 int look_while_stmt(TreeNode* subStmt);
+int look_if_stmt(TreeNode* subStmt);
 int look_for_stmt(TreeNode* subStmt);
 int look_repeat_stmt(TreeNode* subStmt);
 int look_goto_stmt(TreeNode* subStmt);

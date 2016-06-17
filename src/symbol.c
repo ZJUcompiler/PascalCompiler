@@ -106,7 +106,7 @@ int str2int(char* str){
   return ans;
 }
 
-void add_loc_by_type(int type, int count){
+void add_loc_by_type(int type, int count, int pos){
   int size = 0;
   //fprintf(stderr,"now = %d,type = %d",now,type);
   switch(type){
@@ -119,7 +119,7 @@ void add_loc_by_type(int type, int count){
   //fprintf(stderr,"now = %d",(int)now);
   //fprintf(stderr,"now_bucketsieze = %d",(int)(*(now+BUCKET_SIZE)));
   
-  (*(now+BUCKET_SIZE))->memloc += size*count;
+  (*(now+pos))->memloc += size*count;
 }
 
 /*字符串和数字的一一对应*/
@@ -324,7 +324,9 @@ int look_var_part(TreeNode * varPart){
         if(succeed == -1){
           fprintf(ERR,REDEFINE,node->lines->line,node->name);
         }
-        add_loc_by_type(type_check(eleType->tokenString), endIndex-startIndex+1);//分配内存
+        add_loc_by_type(type_check(eleType->tokenString), endIndex-startIndex+1, BUCKET_SIZE);//分配内存
+        int pos = hash(idList->tokenString);
+        (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
       }
       else if(isRecord == 1){
         //printf("dd\n");
@@ -354,7 +356,9 @@ int look_var_part(TreeNode * varPart){
             if(succeed == -1){
               fprintf(ERR,REDEFINE,ele->lines->line,ele->name);
             }
-            add_loc_by_type(name->type,1); 
+            add_loc_by_type(name->type,1, BUCKET_SIZE);
+            int pos = hash(name->tokenString);
+            (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc; 
             name = name -> sibling;      
           }
           fieldDecl = fieldDecl -> sibling;
@@ -377,7 +381,9 @@ int look_var_part(TreeNode * varPart){
           fprintf(ERR,REDEFINE,node->lines->line,node->name);
         }
         //fprintf(stderr,"7\n");
-        add_loc_by_type(typeName,1);//为简单类型分配空间
+        add_loc_by_type(typeName,1, BUCKET_SIZE);//为简单类型分配空间
+        int pos = hash(idList->tokenString);
+        (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
         //fprintf(stderr,"7.5\n");
       }
       idList = idList -> sibling;
@@ -433,7 +439,9 @@ int look_params(TreeNode* parameters){//函数的参数分析
       if(succeed == -1){
        fprintf(ERR,REDEFINE,node->lines->line,node->name);
       }
-      add_loc_by_type(type_check(type->tokenString),1);
+      add_loc_by_type(type_check(type->tokenString),1, BUCKET_SIZE);
+      int pos = hash(id->tokenString);
+      (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
       //fprintf(stderr,"look params3\n");
       id = id->sibling;
     }
@@ -466,7 +474,9 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   //fprintf(stderr,"now2 = %d",now);
   symbolNode return_value = new_symbol_node(name, return_type->lineno, type_check(return_type->tokenString), 0,0); 
   //fprintf(stderr,"look_func_decl1.7\n"); 
-  add_loc_by_type(type_check(return_type->tokenString),1);//把memloc加一个值，给返回值腾空间
+  add_loc_by_type(type_check(return_type->tokenString),1, BUCKET_SIZE);//把memloc加一个值，给返回值腾空间
+  int pos = hash(name);
+  (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
   //fprintf(stderr,"look_func_decl2\n"); 
   succeed = insert_symbol(return_value);//把和函数名相同的返回值加入到符号表
   if(succeed == -1){
@@ -567,6 +577,12 @@ int look_proc_stmt(TreeNode* subStmt){
       param -> type = get_expression_type(param);
       param = param -> sibling;
     }
+  }
+  symbolNode func = st_lookup(now, func_name->tokenString);
+ // printf("now = %d, %s\n",now,func_name->tokenString);
+  subStmt -> type = func->type_const_arrayType;
+  if(subStmt -> type >= 1 && subStmt -> type <= 11){
+    //subStmt->nodekind = 
   }
   return 0;  
 }

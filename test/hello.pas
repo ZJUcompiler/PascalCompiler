@@ -1,11 +1,14 @@
 program test;
 var bb:boolean;
-		b,a:integer;
+		bbbb,a:integer;
 		{c,d:boolean;
 		a:char;
 		a : array[1..25] of integer;}
+function func(a:integer):integer;
 begin
-	b := b*a + 3 * 4;
+end;
+begin
+	bbbb := 3;
 	{a := 'b';
 	c := true;
 	d := 1>2;
@@ -14,12 +17,16 @@ begin
 	begin
    sum := sum + number;
    number := number - 2;
-	end;
+	end;}
 	
-	for b := 1 to 10 do begin
-		writeln(i);
+	for bbbb := 1 to 10 do begin
+		a := a+1;
+		if bbbb>0 then
+			func(bb)
+		else
+			a:=a+1;
 	end;
-	bb := true and true;}
+	bb := true and true;
 end.
 
 
