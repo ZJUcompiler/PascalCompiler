@@ -7,6 +7,7 @@ extern TreeNode * root;
 extern int hasError;
 int traceflag = 0;
 int printflag = 0;
+int doSemantic = 1;
 
 
 void printTree(TreeNode* t, int depth){
@@ -36,12 +37,16 @@ void analysisArg(int argc, char* argv[]){
 	for (i=0; i<argc; i++) {
 		if (strcmp(argv[i], "-d") == 0) printflag = 1;
 		if (strcmp(argv[i], "-t") == 0) traceflag = 1;
+		if (strcmp(argv[i], "-s") == 0) doSemantic = 0;
 	}
 }
 
 int main(int argc, char* argv[]){
 	analysisArg(argc, argv);
 	yyparse();
+	if(doSemantic){
+		semantic_analysis(root);
+	}
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 }
