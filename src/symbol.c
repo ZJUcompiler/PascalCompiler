@@ -559,7 +559,11 @@ int look_proc_stmt(TreeNode* subStmt){
   TreeNode* func_name = subStmt -> child;
   TreeNode* func_params = func_name -> sibling;
   if(func_params != NULL){
-    TreeNode* param;
+    TreeNode* param = func_params -> child;
+    while(param != NULL){
+      param -> type = get_expression_type(param);
+      param = param -> sibling;
+    }
   }
   return 0;  
 }
