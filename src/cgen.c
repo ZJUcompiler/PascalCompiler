@@ -46,31 +46,32 @@ FILE *IR;
 static void genStmtList(TreeNode *tree);
 static void genFunc(TreeNode *tree, char *fatherFuncLabel);
 
-static tacVal genTacVal(char *id, TypeVar type)
-{
-    tacVal t;
-    assert(strlen(id) < 20);
-    strcpy(t.id, id);
-    t.type = type;
-    return t;
-}
+//static tacVal genTacVal(char *id, TypeVar type)
+//{
+//    tacVal t;
+//    assert(strlen(id) < 20);
+//    strcpy(t.id, id);
+//    t.type = type;
+//    return t;
+//}
 
-static inline char *getValTypeStr(tacVal t)
+static inline char *getValTypeStr(TypeVar t)
 {
-    switch(t.type)
+    switch(t)
     {
         case I32: return "i32";
         case I8: return "i8";
         case F32: return "f32";
     }
+    return NULL;
 }
 
 static void emitCode(char*op, tacVal op1, tacVal op2, tacVal op3)
 {
     fprintf(IR, "%s %s %s %s %s %s %s\n", op,
-        getValTypeStr(op1), op1.id,
-        getValTypeStr(op2), op2.id,
-        getValTypeStr(op3), op3.id);
+        getValTypeStr(op1.type), op1.id,
+        getValTypeStr(op2.type), op2.id,
+        getValTypeStr(op3.type), op3.id);
 }
 
 static char *genExp( TreeNode *tree, TypeVar *varType )
@@ -219,8 +220,8 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         tacVal loc = newTac(t0, I32);
         emitCode("add", addr, offs, loc);
         fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3), loc.id,
-                            getValTypeStr(op3), op3.id );
+                            getValTypeStr(op3.type), loc.id,
+                            getValTypeStr(op3.type), op3.id );
     }
     else if ( isArrK(tree) )
     {
@@ -230,7 +231,7 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         p2 = p1->sibling;
         tacVal addr = newTac(p1->tokenString, I32);
 
-        char *offsId = genExp(p2, &tp);
+        //char *offsId = genExp(p2, &tp);
         tacVal offs = newTac(t0, I32);
 
         assert(tp == I32);
@@ -255,8 +256,8 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         tacVal loc = newTac(t1, I32);
         emitCode("add", addr, offs, loc);
         fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3), loc.id,
-                            getValTypeStr(op3), op3.id );
+                            getValTypeStr(op3.type), loc.id,
+                            getValTypeStr(op3.type), op3.id );
 
         // fprintf(IR, "add %s %s %s\n", t0, t1, t0);
         // fprintf(IR, "asn *%s %s\n", t0, varId);
@@ -281,13 +282,14 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         while (p_arg)
         {
             TypeVar tp;
-            char *argId = genExp(p_arg, &tp);
+            char *argId = genExp(p_arg->child, &tp);
             tacVal arg = newTac(argId, tp);
-            fprintf(IR, "arg %s %s\n", getValTypeStr(arg), arg.id);
+            fprintf(IR, "arg %s\n", arg.id);
+            // fprintf(IR, "arg %s %s\n", getValTypeStr(arg.type), arg.id);
             p_arg = p_arg->sibling;
         }
         // assert(strcmp(varId, "$v0")==0);    // TODO: function return
-        fprintf(IR, "call %s\n", tree->tokenString);
+        fprintf(IR, "call %s\n", p1->tokenString);
     }
     // not factor
     else if ( isNotFacK(tree) )
@@ -634,7 +636,7 @@ static void genStmt(TreeNode *tree) {
             char *exprId = genExp(exp, &exprTp);
 
             int L1 = labelNum++;
-            fprintf(IR, "if_f i8 %s _$JMP$_L%d _\n", exprId, L1);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
             genStmt(stmt->child);
             if (else_clause->child == NULL) {
                 fprintf(IR, "_$JMP$_L%d:\n", L1);
@@ -657,7 +659,7 @@ static void genStmt(TreeNode *tree) {
             genStmtList(stmt_list);
             TypeVar exprTp;
             char *exprId = genExp(exp, &exprTp);
-            fprintf(IR, "if_f i8 %s _$JMP$_%d _\n", exprId, L1);
+            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L1);
             break;
         }
         case N_WHILE_STMT: {
@@ -669,7 +671,7 @@ static void genStmt(TreeNode *tree) {
             int L1 = labelNum++;
             int L2 = labelNum++;
             fprintf(IR, "_$JMP$_L%d:\n", L1);
-            fprintf(IR, "if_f i8 %s _$JMP$_%d _\n", exprId, L2);
+            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L2);
             genStmtList(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d:\n", L2);
@@ -697,7 +699,7 @@ static void genStmt(TreeNode *tree) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", id->tokenString, exprId2, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // lt -> 1 == 0 = 0 -> jump
             }
-            fprintf(IR, "if_f i8 %s _$JMP$_L%d _\n", t0, L2);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L2);
             genStmt(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d:\n", L2);
@@ -735,7 +737,7 @@ static void genStmt(TreeNode *tree) {
                 TreeNode *ch1 = case_expr->child;
                 L1++;
                 fprintf(IR, "_$JMP$_L%d:\n", L1);
-                genStmt(ch1->sibling);
+                genStmt(ch1->sibling->child);
                 fprintf(IR, "jmp _$JMP$_L%d\n", L2);
                 case_expr = case_expr->sibling;
             }
