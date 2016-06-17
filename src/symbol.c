@@ -590,7 +590,7 @@ int look_assign_stmt(TreeNode* subStmt){
   }
   int expressionType = get_expression_type(expression);
   //printf("aa");
-  if( expressionType != variableType){//变量类型和表达式类型不同
+  if( expressionType != variableType && !((expressionType == Integer)&&(variableType==Real)) ){//变量类型和表达式类型不同
     fprintf(ERR, TYPEMIXED2,-519,type_string(variableType),type_string(expressionType));
     return -1;
   }
@@ -640,6 +640,7 @@ int look_for_stmt(TreeNode* subStmt){
     return -1;
   }
   else {//正确的情况
+    look_stmt(stmt);
     return 0;
   }
   return 0;  
