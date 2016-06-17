@@ -47,7 +47,6 @@ void analysisArg(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
-	freopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/function.pas", "r", stdin);
 
 	analysisArg(argc, argv);
 	yyparse();
@@ -67,8 +66,8 @@ int main(int argc, char* argv[]){
 
 	// gen Immediate
 	// IR = fopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/expression.tac", "w");
-	IR = stdout;
-	codeGen(root);
+
+
 	// fclose(IR);
 	return 0;
 }
