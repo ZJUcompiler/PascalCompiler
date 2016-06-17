@@ -520,8 +520,8 @@ int look_stmt(TreeNode* stmt){
     if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){//有了
       look_proc_stmt(subStmt);
     }
-    if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){//有了
-      look_proc_stmt(subStmt);
+    if( strcmp(getNodeKindString(subStmt->nodekind),"IF_STMT") == 0){//有了
+      look_if_stmt(subStmt);
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){//有了
       look_assign_stmt(subStmt);
@@ -628,6 +628,20 @@ int look_while_stmt(TreeNode* subStmt){
     return -1;
   }
   return 0;  
+}
+
+int look_if_stmt(TreeNode* subStmt){
+  TreeNode* expression = subStmt -> child;
+  TreeNode* stmt1 = expression -> sibling;
+  TreeNode* stmt2 = stmt1 -> sibling;
+  expression->type = get_expression_type(expression);//表达式
+  if(expression -> type != Boolean){
+    fprintf(ERR, TYPEMIXED2, -215, "boolean", type_string(expression->type));
+    return -1;
+  }
+  look_stmt(stmt1);//if语句
+  look_stmt(stmt2);//else语句
+  return 0;
 }
 
 int look_for_stmt(TreeNode* subStmt){
