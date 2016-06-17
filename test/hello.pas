@@ -9,6 +9,9 @@ begin
 end;
 begin
 	bbbb := 3;
+	repeat
+		a:=a+1;
+	until a = 0;
 	{a := 'b';
 	c := true;
 	d := 1>2;
@@ -17,16 +20,16 @@ begin
 	begin
    sum := sum + number;
    number := number - 2;
-	end;}
+	end;
 	
 	for bbbb := 1 to 10 do begin
 		a := a+1;
-		if bbbb>0 then
-			func(bb)
-		else
+		if bbbb>0 then}
+			bbbb := func(bb);
+		{else
 			a:=a+1;
 	end;
-	bb := true and true;
+	bb := true and true;}
 end.
 
 

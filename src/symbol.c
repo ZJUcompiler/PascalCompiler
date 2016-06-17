@@ -36,7 +36,7 @@ int get_sonex_type(TreeNode* exp){
     return exp->type = get_exp_cal_type(exp);
   }
   //不等式
-  else if(strcmp(nodekind,"EXP_GT") == 0 || strcmp(nodekind,"EXP_LT") == 0 || strcmp(nodekind,"EXP_LE") == 0 || strcmp(nodekind,"EXP_GE") == 0 || strcmp(nodekind,"EQUAL") == 0 || strcmp(nodekind,"UNEQUAL") == 0){
+  else if(strcmp(nodekind,"EXP_GT") == 0 || strcmp(nodekind,"EXP_LT") == 0 || strcmp(nodekind,"EXP_LE") == 0 || strcmp(nodekind,"EXP_GE") == 0 || strcmp(nodekind,"EXP_EQUAL") == 0 || strcmp(nodekind,"EXP_UNEQUAL") == 0){
     if(get_exp_cal_type(exp) != -1){
       return exp->type = Boolean;
     }
@@ -705,6 +705,14 @@ int look_for_stmt(TreeNode* subStmt){
   return 0;
 }
 int look_repeat_stmt(TreeNode* subStmt){
+  TreeNode* stmtList = subStmt -> child;
+  TreeNode* expression = stmtList -> sibling;
+  
+  look_stmt_list_part(stmtList);
+  int type = get_expression_type(expression);
+  if(type != Boolean){
+    fprintf(ERR,TYPEMIXED2,-215,"boolean",type_string(type));
+  }
   return 0;
 }
 int look_goto_stmt(TreeNode* subStmt){
