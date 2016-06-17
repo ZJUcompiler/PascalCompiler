@@ -1098,7 +1098,6 @@ factor : ID {
 
 args_list : args_list COMMA expression {
 					$$ = $1;
-					$$ = newTreeNode(N_ARGS_LIST);
 					TreeNode* exp = newTreeNode(N_EXPRESSION);
 					appendChild(exp, $3);
 					appendChild($$, exp);
