@@ -20,6 +20,7 @@ void print_symbol_table(symbolNode* now){
         }  
       }
 		}
+    printf("memloc = %d\n",(*(now+BUCKET_SIZE))->memloc);
 		printf("-------------------------------------------------------\n");
 }
 
@@ -248,6 +249,7 @@ int look_var_part(TreeNode * varPart){
         int startIndex = str2int(start->tokenString);
         int endIndex = str2int(end->tokenString);
         node = new_symbol_node(idList->tokenString, idList->lineno, Array, endIndex-startIndex+1, type_check(eleType->tokenString));
+        insert_symbol(node);
         add_loc_by_type(type_check(eleType->tokenString), endIndex-startIndex+1);//分配内存
       }
       else if(isRecord == 1){
@@ -270,12 +272,15 @@ int look_var_part(TreeNode * varPart){
           while(name != NULL){
             name -> type = typeDecl -> type;
             symbolNode ele = new_symbol_node(name->tokenString, name->lineno, name -> type, 0, 0);
-            insert_symbol(ele); 
+            insert_symbol(ele);
+            add_loc_by_type(name->type,1); 
             name = name -> sibling;      
           }
           fieldDecl = fieldDecl -> sibling;
         }
+        symbolNode * temp = now;
         now = (*(now+BUCKET_SIZE)) -> nextBucket;
+        (*(now+BUCKET_SIZE)) -> memloc += (*(temp+BUCKET_SIZE)) -> memloc;
       }
       else{
         fprintf(stderr,"var_part_2\n");
@@ -338,6 +343,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
       //fprintf(stderr,"look params2\n");
       symbolNode node = new_symbol_node(id->tokenString, id->lineno, type_check(type->tokenString), 0, 0);
       insert_symbol(node);
+      add_loc_by_type(type_check(type->tokenString),1);
       //fprintf(stderr,"look params3\n");
       id = id->sibling;
     }
@@ -400,6 +406,7 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   symbolNode* proc_bucket; 
   //fprintf(stderr,"look_proc_decl2"); 
   proc_bucket = build_sym_tab(proc_bucket);//建立一个新的symbol table，自动初始化
+  node -> nextBucket = proc_bucket;
   now = proc_bucket;//当前bucket的指针指向函数的bucket
   look_params(parameters);  
   semantic_routine(routine);
@@ -504,12 +511,17 @@ int insert_symbol(symbolNode node){
 symbolNode st_lookup(symbolNode* node, char* name){
   int hashValue = hash(name);
   symbolNode thisLine = *(node + hashValue);
-  while(thisLine != NULL){
-    if(strcmp(thisLine -> name,name ) == 0){
-      return thisLine;
+
+  while(node != NULL){
+    while(thisLine != NULL){
+      if(strcmp(thisLine -> name,name ) == 0){
+        return thisLine;
+      }
+      thisLine = thisLine -> nextNode;
     }
-    thisLine = thisLine -> nextNode;
+    node = (*(node + BUCKET_SIZE)) -> nextBucket;
   }
+  
   return NULL;
 }
 

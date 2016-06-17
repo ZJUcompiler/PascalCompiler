@@ -4,17 +4,27 @@ const
 	kk = 4;
 type
 	name = string;
-var
-		x : record day,year:integer;
-						month:integer;
-			 end;
-function funcnadme(a,b:integer; c,d:char):integer;
+var bb, bbb, b : char ;
+	c : integer;
+	A : integer;
+	{velocity : array [ 1..25] of real;}
+	d : real;
+	e : boolean;
+	hsh : record
+				x:integer;
+				y:real;
+				z:boolean;
+				end; 
+function funcname(a,b:integer; c,d:char):integer;
 var 
 	funca:integer;
 	funcb:char;
+	function inner(a,b:integer):string;
+	begin
+	end;
 begin
 end;
-procedure procedname(a,b:integer; c,d:char);
+procedure procename(a,b:integer; c,d:char);
 var 
 	funca:integer;
 	funcb:char;

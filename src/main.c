@@ -52,7 +52,9 @@ int main(int argc, char* argv[]){
 	printf("now == == %d\n",buckets);
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
 	print_symbol_table(  buckets  );
-	print_symbol_table(  (*(buckets+19))->nextBucket  );
-	print_symbol_table(  (*(buckets+29))->nextBucket  );
+	print_symbol_table(  (*(buckets+28))->nextBucket  );
+	print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );
+	print_symbol_table(  (*(buckets+48))->nextBucket  );
+	print_symbol_table(  (*(buckets+40))->nextBucket  );
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 }
