@@ -7,30 +7,25 @@
 
 #include "stdio.h"
 #include <string.h>
+#include <symbol.h>
+#include <stdlib.h>
 #include <x86.h>
 #include <globals.h>
 FILE *CODE;
 
-static int jmpLabel = 0;
+static const int i32 = 0x00;
+static const int i8 = 0x01;
+static const int f32 = 0x02;
+
+extern symbolNode buckets[];
+extern int layerNum;
+static symbolNode *currSymtab = buckets;
 
 static void regMap(const char *ir_name, char regID[]) {
-    if (strcmp(ir_name, "t0") == 0)
-        strcpy(regID, "eax");
-    else if (strcmp(ir_name, "t1") == 0)
-        strcpy(regID, "ebx");
-    else if (strcmp(ir_name, "t6") == 0)
-        strcpy(regID, "edx");
-    else if (strcmp(ir_name, "t7") == 0)
+    if (strcmp(ir_name, "$t0") == 0)
         strcpy(regID, "edi");
-}
-static inline int isGE(const char *comm) {
-    return strcmp(comm, "ge") == 0;
-}
-static inline int isGT(const char *comm) {
-    return strcmp(comm, "gt") == 0;
-}
-static inline int isLE(const char *comm) {
-    return strcmp(comm, "le") == 0;
+    else if (strcmp(ir_name, "$t1") == 0)
+        strcpy(regID, "esi");
 }
 static inline int isLT(const char *comm) {
     return strcmp(comm, "lt") == 0;
@@ -38,20 +33,20 @@ static inline int isLT(const char *comm) {
 static inline int isEQ(const char *comm) {
     return strcmp(comm, "eq") == 0;
 }
-static inline int isNEQ(const char *comm) {
-    return strcmp(comm, "neq") == 0;
-}
-static inline int isADD(const char *comm) {
-    return strcmp(comm, "add") == 0;
-}
-static inline int isSUB(const char *comm) {
-    return strcmp(comm, "sub") == 0;
+static inline int isXOR(const char *comm) {
+    return strcmp(comm, "xor") == 0;
 }
 static inline int isOR(const char *comm) {
     return strcmp(comm, "or") == 0;
 }
 static inline int isAND(const char *comm) {
     return strcmp(comm, "and") == 0;
+}
+static inline int isADD(const char *comm) {
+    return strcmp(comm, "add") == 0;
+}
+static inline int isSUB(const char *comm) {
+    return strcmp(comm, "sub") == 0;
 }
 static inline int isMUL(const char *comm) {
     return strcmp(comm, "mul") == 0;
@@ -61,6 +56,18 @@ static inline int isDIV(const char *comm) {
 }
 static inline int isMOD(const char *comm) {
     return strcmp(comm, "mod") == 0;
+}
+static inline int isFADD(const char *comm) {
+    return strcmp(comm, "fadd") == 0;
+}
+static inline int isFSUB(const char *comm) {
+    return strcmp(comm, "fsub") == 0;
+}
+static inline int isFMUL(const char *comm) {
+    return strcmp(comm, "fmul") == 0;
+}
+static inline int isFDIV(const char *comm) {
+    return strcmp(comm, "fdiv") == 0;
 }
 static inline int isASN(const char *comm) {
     return strcmp(comm, "asn") == 0;
@@ -77,19 +84,8 @@ static inline int isIF(const char *comm) {
 static inline int isJMP(const char *comm) {
     return strcmp(comm, "jmp") == 0;
 }
-static int getMaxMemLoc(symbolNode *start) {
-    return 16;
-    symbolNodeCon *node;
-    int cnt = 0, maxMemLoc = 0;
-    while (cnt < BUFFER_SIZE) {
-        node = *(start + cnt);
-        while (node != NULL) {
-            if (node->memloc > maxMemLoc)
-                maxMemLoc = node->memloc;
-            node = node->nextNode;
-        }
-        cnt++;
-    }
+static inline int getMaxMemLoc(symbolNode *table) {
+    return table[BUCKET_SIZE]->memloc;
 }
 static int labelCheck(char line[]) {
     char *tok;
@@ -99,16 +95,293 @@ static int labelCheck(char line[]) {
             return -1; // not Label
         switch (tok[2]) {
             case 'M':
-                return 1; // _$MAIN$_Lx: main program
+                return 1; // _$MAIN$_: main program
             case 'P':
-                return 2; // _$PROC$_Lx: procedure or function
+                return 2; // _$PROC$name1$name2$name3$... : procedure
+            case 'F':
+                return 3; // _$FUNC$name1$name2$name3$... : function
             case 'J':
-                return 3; // _$JUMP$_Lx: jump label
+                return 4; // _$JUMP$_Lx: jump label
             case 'C':
-                return 4;// _$CONST$_Lx: const data
+                return 5;// _$CONST$_Lx: const data
         }
     }
     return 0; // empty line
+}
+
+
+static int isNum(char *op) {
+    return (op[0] < '9') && (op[0] > '0');
+}
+static int isReg(char *op) {
+    return op[0] == '$';
+}
+static int isAddr(char *op) {
+    return op[0] == '&';
+}
+static int isPointer(char *op) {
+    return op[0] == '*';
+}
+static inline int isVar(char *op) {
+    return !(isNum(op) || isReg(op) || isAddr(op) || isPointer(op));
+}
+
+static void instParse(char *line, char op1[], char op2[], char op3[],\
+        int *op1_type, int *op2_type, int *op3_type) {
+    char *tok;
+    char comm[8];
+    tok = strtok(line, " \r\n");
+    strcpy(comm, tok);
+
+    // op1_type
+    tok = strtok(NULL, " \r\n");
+    if (strcmp(tok, "i32") == 0)
+        *op1_type = i32;
+    else if (strcmp(tok, "f32") == 0)
+        *op1_type = f32;
+    else if (strcmp(tok, "i8") == 0)
+        *op1_type = i8;
+    // op1
+    tok = strtok(NULL, " \r\n");
+    strcpy(op1, tok);
+
+    // op2_type
+    tok = strtok(NULL, " \r\n");
+    if (strcmp(tok, "i32") == 0)
+        *op2_type = i32;
+    else if (strcmp(tok, "f32") == 0)
+        *op2_type = f32;
+    else if (strcmp(tok, "i8") == 0)
+        *op2_type = i8;
+    // op2
+    tok = strtok(NULL, " \r\n");
+    strcpy(op2, tok);
+
+    if (isASN(comm))
+        return;
+    // op3_type
+    tok = strtok(NULL, " \r\n");
+    if (strcmp(tok, "i32") == 0)
+        *op3_type = i32;
+    else if (strcmp(tok, "f32") == 0)
+        *op3_type = f32;
+    else if (strcmp(tok, "i8") == 0)
+        *op3_type = i8;
+    // op3
+    tok = strtok(NULL, " \r\n");
+    strcpy(op3, tok);
+}
+
+static symbolNode loopBack(char *op) {
+    symbolNode op_symnode = st_lookup(currSymtab, op);
+    int i;
+    for (i = 0; i < layerNum; i++) {
+        if (i == 0)
+            fprintf(CODE, "\tmovl\t(%%ebp), %%eax\n");
+        else
+            fprintf(CODE, "\tmovl\t(%%eax), %%eax\n");
+    }
+    return op_symnode;
+}
+void getValue(char *op, int op_type) {
+    if (isNum(op)) {
+        int num = atoi(op);
+        fprintf(CODE, "\tmovl\t%d, %%edx\n", num);
+        fprintf(CODE, "\tpushl\t%%edx\n");
+    }
+    else if (isReg(op)) {
+        char regID[8];
+        regMap(op, regID);
+        fprintf(CODE, "\tpushl\t%%%s\n", regID);
+    }
+    else if (isVar(op)) {
+        symbolNode symnode = loopBack(op);
+        if (op_type == f32 || op_type == i32) {
+            fprintf(CODE, "\tmovl\t-%d(%%eax), %%edx\n", symnode->memloc);
+            fprintf(CODE, "\tpushl\t%%edx\n");
+        }
+        else if (op_type == i8) {
+            fprintf(CODE, "\tmovl\t0, %%edx\n");
+            fprintf(CODE, "\tmovb\t-%d(%%eax), %%dl\n", symnode->memloc);
+            fprintf(CODE, "\tpushl\t%%edx\n");
+        }
+    }
+}
+static int typeAlign(int op1_type, int op2_type) {
+    if (op1_type == i32 && op2_type == f32) {
+        fprintf(CODE, "\tfildl\t4(%%esp)\n");
+        fprintf(CODE, "\tfstps\t4(%%esp)\n");
+        return f32;
+    }
+    else if (op1_type == f32 && op2_type == i32) {
+        fprintf(CODE, "\tfildl\t0(%%esp)\n");
+        fprintf(CODE, "\tfstps\t0(%%esp)\n");
+        return f32;
+    }
+    else if (op1_type == f32 && op2_type == f32)
+        return f32;
+    return i32;
+}
+void calcu(char *comm, int op1_type, int op2_type, int op3_type) {
+    int type;
+    if (isADD(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\taddl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = i32;
+    }
+    else if (isSUB(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tsubl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = i32;
+    }
+    else if (isMUL(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tmull\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = i32;
+    }
+    else if (isDIV(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tdivl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = i32;
+    }
+    else if (isMOD(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tdivl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = i32;
+    }
+    else if (isFADD(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\taddl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = f32;
+    }
+    else if (isFSUB(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tsubl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = f32;
+    }
+    else if (isFMUL(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tmull\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = f32;
+    }
+    else if (isFDIV(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tdivl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl\t%%esi\n");
+        type = f32;
+    }
+    // ...
+    else if (isLT(comm)) {
+        type = typeAlign(op1_type, op2_type);
+        if (type == i32) {
+            fprintf(CODE, "\tpopl\t%%edi\n");
+            fprintf(CODE, "\tpopl\t%%esi\n");
+            fprintf(CODE, "\tcmpl\t%%edi, %%esi\n");
+            fprintf(CODE, "\tsetl\t%%al\n");
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            fprintf(CODE, "\tpushl\t%%eax\n");
+        }
+        else if (type == f32) {
+            fprintf(CODE, "\tflds\t0(%%esp)\n");
+            fprintf(CODE, "\tflds\t4(%%esp)\n");
+            fprintf(CODE, "\tfxch\t%%st(1)\n");
+            fprintf(CODE, "\tfucomip\t%%st(1), %%st\n");
+            fprintf(CODE, "\tfstp\t%%st(0)\n");
+            fprintf(CODE, "\tseta\t%%al\n");
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            fprintf(CODE, "\tpopl\t%%edi\n");
+            fprintf(CODE, "\tpopl\t%%esi\n");
+            fprintf(CODE, "\tpushl\t%%eax\n");
+        }
+    }
+    else if (isEQ(comm)) {
+        type = typeAlign(op1_type, op2_type);
+        if (type == i32 && type == i8) {
+            fprintf(CODE, "\tpopl\t%%edi\n");
+            fprintf(CODE, "\tpopl\t%%esi\n");
+            fprintf(CODE, "\tcmpl\t%%edi, %%esi\n");
+            fprintf(CODE, "\tsete\t%%al\n");
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            fprintf(CODE, "\tpushl\t%%eax\n");
+        }
+        else if (type == f32) {
+            fprintf(CODE, "\tflds\t0(%%esp)\n");
+            fprintf(CODE, "\tflds\t4(%%esp)\n");
+            fprintf(CODE, "\tfucomip\t%%st(1), %%st\n");
+            fprintf(CODE, "\tfstp\t%%st(0)\n");
+            fprintf(CODE, "\tsete\t%%al\n");
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            fprintf(CODE, "\tpushl\t%%eax\n");
+            fprintf(CODE, "\tpopl\t%%edi\n");
+            fprintf(CODE, "\tpopl\t%%esi\n");
+            fprintf(CODE, "\tpushl\t%%eax\n");
+        }
+    }
+    else if (isXOR(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\txorl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl%%esi\n");
+        type = i32;
+    }
+    else if (isOR(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\torl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl%%esi\n");
+        type = i32;
+    }
+    else if (isXOR(comm)) {
+        fprintf(CODE, "\tpopl\t%%edi\n");
+        fprintf(CODE, "\tpopl\t%%esi\n");
+        fprintf(CODE, "\tandl\t%%edi, %%esi\n");
+        fprintf(CODE, "\tpushl%%esi\n");
+        type = i32;
+    }
+    else if (isASN(comm)) {
+        // nothing to do
+        type = op2_type;
+    }
+    if (type != f32 && op3_type == f32) {
+        fprintf(CODE, "\tfildl\t0(%%esp)\n");
+        fprintf(CODE, "\tfstps\t0(%%esp)\n");
+    }
+}
+
+static void writeBack(char *op3, int op3_type) {
+    if (isReg(op3)) {
+        char regID[8];
+        regMap(op3, regID);
+        fprintf(CODE, "\tpopl\t%%%s\n", regID);
+    }
+    else if (isVar(op3)) {
+        symbolNode symnode = loopBack(op3);
+        if (op3_type == f32 || op3_type == i32) {
+            fprintf(CODE, "\tpopl\t%%edx\n");
+            fprintf(CODE, "\tmovl\t%%edx, -%d(%%eax)\n", symnode->memloc);
+        }
+        else if (op3_type == i8) {
+            fprintf(CODE, "\tpopl\t%%edx\n");
+            fprintf(CODE, "\tmovb\t%%dl, -%d(%%eax)\n", symnode->memloc);
+        }
+    }
 }
 
 static void makeStack(int stackSize) {
@@ -119,9 +392,9 @@ static void makeStack(int stackSize) {
 
 static void genPreDecl() {
     fprintf(CODE, "\t.file \"test.pas\"\n");
-    fprintf(CODE, "##########################\n");
-    fprintf(CODE, "#    Generated by PasC   #\n");
-    fprintf(CODE, "##########################\n");
+    fprintf(CODE, "###########################\n");
+    fprintf(CODE, "#    Generated by PasC    #\n");
+    fprintf(CODE, "###########################\n");
     fprintf(CODE, "\n");
 }
 static void genPostDecl() {
@@ -129,85 +402,53 @@ static void genPostDecl() {
     fprintf(CODE, ".section\t.node.GNU-stack,\"\",@progbits\n");
 }
 static void genInst(char *line) {
-    char comm[8], adr1[256], adr2[256], adr3[256];
-    char reg1[8], reg2[8], reg3[8];
-    sscanf(line, "%s %s %s %s\n", comm, adr1, adr2, adr3);
-    regMap(adr1, reg1);
-    regMap(adr2, reg2);
-    regMap(adr3, reg3);
-    if (isADD(comm)) {
-        if (strcmp(adr1, adr3) == 0)
-            fprintf(CODE, "\taddl\t%s, %s\n", reg2, reg3);
-        else if (strcmp(adr2, adr3) == 0)
-            fprintf(CODE, "\taddl\t%s, %s\n", reg1, reg3);
-        else {
-            fprintf(CODE, "\taddl\t%s, %s\n", reg1, reg2);
-            fprintf(CODE, "\tmovl\t%s, %s\n", reg2, reg3);
-        }
+    char op1[32], op2[32], op3[32];
+    int op1_type, op2_type, op3_type;
+    char *tok = strtok(line, " \r\n");
+    if (isLT(tok) || isEQ(tok) || isXOR(tok) || isOR(tok) || isAND(tok) || isADD(tok)\
+            || isSUB(tok) || isMUL(tok) || isDIV(tok) || isMOD(tok) || isFADD(tok)\
+            || isFMUL(tok) || isFDIV(tok)) {
+        instParse(line, op1, op2, op3, &op1_type, &op2_type, &op3_type);
+        getValue(op1, op1_type);
+        getValue(op2, op2_type);
+        calcu(tok, op1_type, op2_type, op3_type);
+        writeBack(op3, op3_type);
     }
-    else if (isSUB(comm)) {
-        if (strcmp(adr1, adr3) == 0)
-            fprintf(CODE, "\tsubl\t%s, %s\n", reg2, reg3);
-        else if (strcmp(adr2, adr3) == 0) {
-            fprintf(CODE, "\tsubl\t%s, %s\n", reg2, reg1);
-            fprintf(CODE, "\tmovl\t%s, %s\n", reg1, reg3);
-        }
-        else {
-            fprintf(CODE, "\tsubl\t%s, %s\n", reg2, reg1);
-            fprintf(CODE, "\tmovl\t%s, %s\n", reg1, reg3);
-        }
+    else if (isASN(tok)) {
+        instParse(line, op1, op2, op3, &op1_type, &op2_type, &op3_type);
+        getValue(op1, op1_type);
+        writeBack(op2, op2_type);
     }
-    else if (isOR(comm)) {
-        fprintf(CODE, "\tcmpl\t$0, %s\n", reg1);
-        fprintf(CODE, "\tjne\t.L%d\n", jmpLabel);
-        fprintf(CODE, "\tcmpl\t$0, %s\n", reg2);
-        fprintf(CODE, "\tje\t.L%d\n", jmpLabel+1);
-        fprintf(CODE, ".L%d:\n", jmpLabel);
-        fprintf(CODE, "\tmovl\t$1, %s\n", reg3);
-        fprintf(CODE, "\tjmp\t.L%d\n", jmpLabel+2);
-        fprintf(CODE, ".L%d:\n", jmpLabel+1);
-        fprintf(CODE, "\tmovl\t$0, %s\n", reg3);
-        fprintf(CODE, ".L%d:\n", jmpLabel+2);
+    else if (isJMP(tok)) {
+        tok = strtok(NULL, " \n\r");
+        fprintf(CODE, "\tjmp\t%s\n", tok);
     }
-    else if (isAND(comm)) {
-        fprintf(CODE, "\tcmpl\t$0, %s\n", reg1);
-        fprintf(CODE, "\tje\t.L%d\n", jmpLabel);
-        fprintf(CODE, "\tcmpl\t$0, %s\n", reg2);
-        fprintf(CODE, "\tje\t.L%d\n", jmpLabel);
-        fprintf(CODE, "\tmovl\t$1, %s\n", reg3);
-        fprintf(CODE, "\tjmp\t.L%d\n", jmpLabel+1);
-        fprintf(CODE, ".L%d:\n", jmpLabel);
-        fprintf(CODE, "\tmovl\t$0, %s\n", reg3);
-        fprintf(CODE, ".L%d:\n", jmpLabel+1);
+    else if (isIF(tok)) {
+        getValue(op1, op1_type);
+        tok = strtok(NULL, " \r\n");
+        fprintf(CODE, "\tpopl\t%%edx\n");
+        fprintf(CODE, "\tcmpb\t0, %%dl\n");
+        fprintf(CODE, "\tje\t%s\n", tok);
     }
-    else if (isGE(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsetge\t%s\n", reg3);
+}
+static symbolNode getBucketbyName(char *name) {
+    char *tok;
+    symbolNode *currBucket = buckets;
+    symbolNode symnode;
+
+    // _$FUNC$name1$name2$name3
+    tok = strtok(name, "$\r\n"); // _
+    tok = strtok(NULL, "$\r\n"); // FUNC
+    tok = strtok(NULL, "$\r\n"); // name1
+    while (tok != NULL) {
+        symnode = st_lookup(currBucket, tok);
+        currBucket = symnode->nextBucket;
     }
-    else if (isGT(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsetg\t%s\n", reg3);
-    }
-    else if (isLE(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsetle\t%s\n", reg3);
-    }
-    else if (isLT(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsetl\t%s\n", reg3);
-    }
-    else if (isEQ(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsete\t%s\n", reg3);
-    }
-    else if (isNEQ(comm)) {
-        fprintf(CODE, "\tcmpl\t%s, %s\n", reg1, reg2);
-        fprintf(CODE, "\tsetne\t%s\n", reg3);
-    }
+    return symnode;
 }
 static void genTextSection(FILE *IR) {
     fprintf(CODE, ".section\t.text\n");
-    char line[512], line_back[512], currBlock[32];
+    char line[512], line_back[512], currBlock[128];
     char *tok;
     static int currFinID = 0;
 
@@ -242,8 +483,8 @@ static void genTextSection(FILE *IR) {
                 fprintf(CODE, "%s:\n", tok+8);
                 strcpy(currBlock, tok);
 
-                symbolNode *table = getBucketbyName(tok+8);
-                makeStack(getMaxMemLoc(table));
+                symbolNode table = getBucketbyName(tok+8);
+                makeStack(getMaxMemLoc(table->nextBucket));
                 break;
             case 3:
                 fprintf(CODE, "%s:\n", tok);
@@ -263,7 +504,7 @@ static void genDataSection(FILE *IR) {
         fprintf(CODE, "data: %s\n", line);
     }
 }
-int genX86Asm(FILE *IR) {
+void genX86Asm(FILE *IR) {
     genPreDecl();
     // Code section
     genTextSection(IR);
