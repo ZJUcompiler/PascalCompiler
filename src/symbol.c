@@ -283,7 +283,7 @@ int look_var_part(TreeNode * varPart){
           typeName = thisNode -> type_const_arrayType;
           //fprintf("%s\n",typeNode->tokenString);
           free(typeNode -> tokenString);
-          typeNode->tokenString = (char*)malloc(sizeof(char)* (strlen (type_string(thisNode -> name)) + 1));
+          typeNode->tokenString = (char*)malloc(sizeof(char)* (strlen (type_string(thisNode -> type_const_arrayType)) + 1));
           strcpy(typeNode->tokenString,type_string(thisNode->type_const_arrayType));
         }
         else 
@@ -499,9 +499,7 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   return 0;
 }
 
-/*正式的语句部分*/
-int look_stmt_list_part(TreeNode* stmtList){
-  TreeNode* stmt = stmtList -> child;
+int look_stmt(TreeNode* stmt){
   TreeNode* subStmt;
   while(stmt != NULL){
     subStmt = stmt -> child;
@@ -537,6 +535,11 @@ int look_stmt_list_part(TreeNode* stmtList){
   }
   return 0;
 }
+/*正式的语句部分*/
+int look_stmt_list_part(TreeNode* stmtList){
+  TreeNode* stmt = stmtList -> child;
+  return look_stmt(stmt);
+}
 
 
 int look_proc_stmt(TreeNode* subStmt){
@@ -569,8 +572,18 @@ int look_assign_stmt(TreeNode* subStmt){
 }
 
 int look_while_stmt(TreeNode* subStmt){
+  TreeNode* expression = subStmt->child;
+  TreeNode* stmt = expression->sibling;
+  if(get_expression_type(expression) == Boolean){
+    look_stmt(stmt);
+  }
+  else{
+    fprintf(ERR, TYPEMIXED3, -518, type_string(expression->type));
+    return -1;
+  }
   return 0;  
 }
+
 int look_for_stmt(TreeNode* subStmt){
   return 0;  
 }

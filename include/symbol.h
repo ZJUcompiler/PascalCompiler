@@ -20,6 +20,7 @@
 #define REDEFINE "line %d : Redefinition of symbol %s\n"
 #define TYPEMIXED "line %d : Calculation cannot be done between different data type except 'REAL' and 'INTEGER'\n"
 #define TYPEMIXED2 "line %d : Expected '%s', however, a '%s' type got\n"
+#define TYPEMIXED3 "line %d : Expected 'boolean', however, a '%s' type got\n"
 #define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
 #define NO_SUCH_SYMBOL "No such symbol named \n"
 
