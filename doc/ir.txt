@@ -1,0 +1,28 @@
+lt i32/f32 op1 i32/f32 op2 i8 op3
+eq i32/f32 op1 i32/f32 op2 i8 op3
+xor i32/i8 op1 i32/i8 op2 i32/i8 op3
+or i32/i8 op1 i32/i8 op2 i32/i8 op3
+and i32/i8 op1 i32/i8 op2 i32/i8 op3
+add i32 op1 i32 op2 i32 op3
+sub
+mul
+div
+mod
+fadd f32/i32 op1 f32/i32 op2 f32/i32 op3
+fsub f32/i32 op1 f32/i32 op2 f32/i32 op3
+fmul f32/i32 op1 f32/i32 op2 f32/i32 op3
+fdiv f32/i32 op1 f32/i32 op2 f32/i32 op3
+asn f32/i32/i8 op1 f32/i32/i8 op2 
+arg op
+call id
+if_f i8 op1 label
+jmp label
+
+op -> &id *id id 1 &*($t0-$t7) ($t0-$t7)
+label -> _$JMP$_Lx
+
+_$FUNC$name1$name2$name3$
+_$PROC$name1$name2$name3$
+_$CONST$_Lx
+_$MAIN$_
+_$JMP$_Lx
