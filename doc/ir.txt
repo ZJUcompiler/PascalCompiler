@@ -20,3 +20,9 @@ jmp label
 
 op -> &id *id id 1 ($t0-$t7)
 label -> _$JMP$_Lx
+
+_$FUNC$name1$name2$name3$
+_$PROC$name1$name2$name3$
+_$CONST$_Lx
+_$MAIN$_
+_$JMP$_Lx
