@@ -17,8 +17,14 @@
 #define Function 10
 #define Procedure 11
 
-#define REDEFINE "Redefinition of variable %s\n in line %d"
-#define NO_SUCH_SYMBOL "No such symbol named "
+#define REDEFINE "line %d : Redefinition of symbol %s\n"
+#define TYPEMIXED "line %d : Calculation cannot be done between different data type except 'REAL' and 'INTEGER'\n"
+#define TYPEMIXED2 "line %d : Expected '%s', however, a '%s' type got\n"
+#define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
+#define NO_SUCH_SYMBOL "No such symbol named \n"
+
+#define ERR stderr
+
 
 typedef struct lineListCon{
 	int line;
@@ -41,6 +47,9 @@ typedef struct symbolNodeCon{
 extern symbolNode buckets[BUCKET_SIZE+1];
 
 void print_symbol_table(symbolNode* now);
+int get_expression_type(TreeNode* exp);
+int get_sonex_type(TreeNode* exp);
+int get_exp_cal_type(TreeNode* exp);
 int hash(char*);
 int str2int(char*);
 void add_loc_by_type(int,int);//根据给出的类型自动增加memloc
