@@ -57,7 +57,7 @@ int get_sonex_type(TreeNode* exp){
       return -1;
     }
     int type = thisNode -> type;
-    return type;
+    return exp->type = type;
   }
   else if(strcmp(nodekind,"SYS_CON") == 0){
     if(strcmp(exp -> tokenString,"true") == 0 || strcmp(exp -> tokenString,"false") == 0)
@@ -65,7 +65,7 @@ int get_sonex_type(TreeNode* exp){
     return -1;
   }
   else{
-    return type_check(getNodeKindString(exp -> nodekind));
+    return exp->type = type_check(getNodeKindString(exp -> nodekind));
   }
   return 0;
 }
@@ -517,17 +517,20 @@ int look_stmt(TreeNode* stmt){
   while(stmt != NULL){
     subStmt = stmt -> child;
     /*判断是哪种语句*/
-    if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){
+    if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){//有了
       look_proc_stmt(subStmt);
     }
-    else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){
+    if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){//有了
+      look_proc_stmt(subStmt);
+    }
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){//有了
       look_assign_stmt(subStmt);
       //printf("dd");
     }
-    else if(strcmp(getNodeKindString(subStmt->nodekind),"WHILE_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"WHILE_STMT") == 0){//有了
       look_while_stmt(subStmt);
     }
-    else if(strcmp(getNodeKindString(subStmt->nodekind),"FOR_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"FOR_STMT") == 0){//有了
       look_for_stmt(subStmt);
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"REPEAT_STMT") == 0){
@@ -539,7 +542,7 @@ int look_stmt(TreeNode* stmt){
     else if(strcmp(getNodeKindString(subStmt->nodekind),"CASE_STMT") == 0){
       look_case_stmt(subStmt);
     }
-    else if(strcmp(getNodeKindString(subStmt->nodekind),"STMT_LIST") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"STMT_LIST") == 0){//有了
       look_compound_stmt(subStmt);
     }
     else
