@@ -31,15 +31,27 @@ int get_expression_type(TreeNode* exp){
 }
 int get_sonex_type(TreeNode* exp){
   char* nodekind = getNodeKindString(exp -> nodekind);
-  if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_SUB")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0){
+  //等式
+  if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_SUB")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0 ){
     return exp->type = get_exp_cal_type(exp);
+  }
+  //不等式
+  else if(strcmp(nodekind,"EXP_GT") == 0 || strcmp(nodekind,"EXP_LT") == 0 || strcmp(nodekind,"EXP_LE") == 0 || strcmp(nodekind,"EXP_GE") == 0 || strcmp(nodekind,"EQUAL") == 0 || strcmp(nodekind,"UNEQUAL") == 0){
+    if(get_exp_cal_type(exp) != -1){
+      return exp->type = Boolean;
+    }
   }
   else if(strcmp(nodekind,"ID") == 0){
     symbolNode thisNode = st_lookup(now, exp->tokenString);
     int type = thisNode -> type;
     return type;
   }
-  else {
+  else if(strcmp(nodekind,"SYS_CON") == 0){
+    if(strcmp(exp -> tokenString,"true") == 0 || strcmp(exp -> tokenString,"false") == 0)
+      return Boolean;
+    return -1;
+  }
+  else{
     return type_check(getNodeKindString(exp -> nodekind));
   }
   return 0;
