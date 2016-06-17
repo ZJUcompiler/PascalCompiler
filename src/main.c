@@ -10,6 +10,7 @@ extern symbolNode buckets[BUCKET_SIZE+1];
 int traceflag = 0;
 int printflag = 0;
 int doSemantic = 1;
+int printSymbol = 0;
 
 
 void printTree(TreeNode* t, int depth){
@@ -40,6 +41,7 @@ void analysisArg(int argc, char* argv[]){
 		if (strcmp(argv[i], "-d") == 0) printflag = 1;
 		if (strcmp(argv[i], "-t") == 0) traceflag = 1;
 		if (strcmp(argv[i], "-s") == 0) doSemantic = 0;
+		if (strcmp(argv[i], "-y") == 0) printSymbol = 1;
 	}
 }
 
@@ -49,12 +51,14 @@ int main(int argc, char* argv[]){
 	if(doSemantic){
 		semantic_analysis(root);
 	}
-	printf("now == == %d\n",buckets);
+	//printf("now == == %d\n",buckets);
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
 	print_symbol_table(  buckets  );
-	print_symbol_table(  (*(buckets+28))->nextBucket  );
-	print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );
-	print_symbol_table(  (*(buckets+48))->nextBucket  );
-	print_symbol_table(  (*(buckets+40))->nextBucket  );
+	if(printSymbol){
+		print_symbol_table(  (*(buckets+28))->nextBucket  );
+		print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );
+		print_symbol_table(  (*(buckets+48))->nextBucket  );
+		print_symbol_table(  (*(buckets+40))->nextBucket  );
+	}
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 }
