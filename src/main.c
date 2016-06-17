@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "util.h"
 #include "symbol.h"
+#include "cgen.h"
 
 int yyparse();
 extern int totalLine;
@@ -46,6 +47,8 @@ void analysisArg(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
+	freopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/function.pas", "r", stdin);
+
 	analysisArg(argc, argv);
 	yyparse();
 	if(doSemantic){
@@ -61,4 +64,11 @@ int main(int argc, char* argv[]){
 		print_symbol_table(  (*(buckets+40))->nextBucket  );
 	}
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
+
+	// gen Immediate
+	// IR = fopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/expression.tac", "w");
+	IR = stdout;
+	codeGen(root);
+	// fclose(IR);
+	return 0;
 }

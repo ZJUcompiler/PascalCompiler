@@ -51,6 +51,8 @@ void appendChild(TreeNode *t, TreeNode *child){
 	t->nChild++;
 }
 
+char* type_string(int type);
+int isTerminal(NodeKind kind);
 void printTreeNode(TreeNode* treeNode){
 	char *name = getNodeKindString(treeNode->nodekind);
 	int isTerm = isTerminal(treeNode->nodekind);
@@ -359,7 +361,7 @@ int toConstVal( TreeNode *tree )
             if (strcmp(tree->tokenString, "true")==0)
                 return 1;    
             else if(strcmp(tree->tokenString, "maxint")==0)
-                return 2147483648;
+                return (int)2147483648;
             else if(strcmp(tree->tokenString, "false")==0)
                 return 0;
             assert(0);
@@ -368,20 +370,3 @@ int toConstVal( TreeNode *tree )
             assert(0);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

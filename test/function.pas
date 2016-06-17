@@ -6,13 +6,13 @@ var
     var 
         result: real;
     begin
-        if (num1 > num2) then
-            result := num1
+        if (a > b) then
+            result := a
         else
-            result := num2;
+            result := b;
         max := result;
     end; 
 
 begin
-    a := max(1,2);
+    a:=max(1,2);
 end.

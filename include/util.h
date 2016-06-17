@@ -12,6 +12,8 @@ void printTreeNode(TreeNode* treeNode);
 char* getNodeKindString(NodeKind kind);
 void deleteTreeNode(TreeNode *t);
 int toConstVal(TreeNode *t);
+char *m_itoa(int);
+char *m_ftoa(float);
 
 static inline int isOpK( TreeNode *tree)
 {
@@ -32,7 +34,7 @@ static inline int isOpK( TreeNode *tree)
 
 static inline int isRecK( TreeNode *tree )
 {
-    return (tree->nChild == 2) && 
+    return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
             (tree->child->nodekind == N_ID) &&
             (tree->child->sibling->nodekind == N_ID);
@@ -40,7 +42,7 @@ static inline int isRecK( TreeNode *tree )
 
 static inline int isArrK( TreeNode *tree )
 {
-    return (tree->nChild == 2) && 
+    return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
             (tree->child->nodekind == N_ID) &&
             (tree->child->sibling->nodekind == N_EXPRESSION);
@@ -48,7 +50,7 @@ static inline int isArrK( TreeNode *tree )
 
 static inline int isCallK( TreeNode *tree )
 {
-    return (tree->nChild == 2) && 
+    return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
             (tree->child->nodekind == N_ID) &&
             (tree->child->sibling->nodekind == N_ARGS_LIST);
@@ -56,7 +58,7 @@ static inline int isCallK( TreeNode *tree )
 
 static inline int isNotFacK( TreeNode *tree )
 {
-    return (tree->nChild == 2) && 
+    return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
             (tree->child->nodekind == N_NOT) &&
             (tree->child->sibling->nodekind == N_FACTOR);
@@ -64,7 +66,7 @@ static inline int isNotFacK( TreeNode *tree )
 
 static inline int isRevFacK( TreeNode *tree )
 {
-    return (tree->nChild == 2) && 
+    return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
             (tree->child->nodekind == N_MINUS) &&
             (tree->child->sibling->nodekind == N_FACTOR);
@@ -96,8 +98,8 @@ static inline int isStringK( TreeNode *tree)
 
 static inline int isExpK( TreeNode *tree )
 {
-    return isOpK(tree) || isExpK(tree) ||
-        isRecK(tree) || isArrK(tree) ||
+    assert(tree);
+    return isOpK(tree) || isRecK(tree) || isArrK(tree) ||
         isCallK(tree) || isRevFacK(tree) ||
         isNotFacK(tree) || isIdK(tree) ||
         isConstValK(tree) || isCharK(tree) ||
