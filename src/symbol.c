@@ -3,6 +3,7 @@
 
 extern TreeNode * root;
 symbolNode *now = NULL;//指向桶的起始地址的指针
+int lineNum;
 
 symbolNode buckets[BUCKET_SIZE+1];//多余一个空出，有其他用处
 int layerNum = 0;
@@ -24,7 +25,7 @@ void print_symbol_table(symbolNode* now){
     printf("memloc = %d\n",(*(now+BUCKET_SIZE))->memloc);
 		printf("--------------------------------------------------------------\n");
 }
-
+/*获取表达式的类型*/
 int get_expression_type(TreeNode* exp){
   printf("%s\n",getNodeKindString(exp -> child -> nodekind));
   return exp->type = get_sonex_type(exp->child);
@@ -52,6 +53,7 @@ int get_sonex_type(TreeNode* exp){
   }
   else if(strcmp(nodekind,"ID") == 0){//ID的类型
     symbolNode thisNode = st_lookup(now, exp->tokenString);
+    lineNum = exp -> lineno;
     if(thisNode == NULL){
       fprintf(ERR,NO_SUCH_SYMBOL,exp->lineno,exp->tokenString);
       return -1;
@@ -60,6 +62,7 @@ int get_sonex_type(TreeNode* exp){
     return exp->type = type;
   }
   else if(strcmp(nodekind,"SYS_CON") == 0){
+    lineNum = exp -> lineno;
     if(strcmp(exp -> tokenString,"true") == 0 || strcmp(exp -> tokenString,"false") == 0)
       return Boolean;
     return -1;
@@ -75,6 +78,7 @@ int get_sonex_type(TreeNode* exp){
   }
   else{
     return exp->type = type_check(getNodeKindString(exp -> nodekind));
+    lineNum = exp -> lineno;
   }
   return 0;
 }
@@ -91,7 +95,7 @@ int get_exp_cal_type(TreeNode* exp){
     return 3;
   }
   else{
-    fprintf(ERR, TYPEMIXED, -521);
+    fprintf(ERR, TYPEMIXED, lineNum);
     return -1;
   }
 }
@@ -229,7 +233,9 @@ int look_const_part(TreeNode * constPart){
     symbolNode constNode = new_symbol_node(id->tokenString, def_line, Const, 0, content -> type);
     int succeed = insert_symbol(constNode);
     if(succeed == -1){
+      //printf("aa");
       fprintf(ERR,REDEFINE,constNode->lines->line,constNode->name);
+      //printf("aa");
     }
     constPartExp = constPartExp -> sibling;
   }
@@ -472,7 +478,9 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   symbolNode node = new_symbol_node(name, func_head->child->lineno, Function, 0, type_check(return_type -> tokenString));
   int succeed = insert_symbol(node);
   if(succeed == -1){
+      //fprintf(stderr,"aa");
       fprintf(ERR,REDEFINE,node->lines->line,node->name);
+      //fprintf(stderr,"aa\n");
   }
   symbolNode* func_bucket;
   //fprintf(stderr,"look_func_decl1\n");
@@ -482,15 +490,17 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   now = func_bucket;//当前bucket的指针指向函数的bucket
   //fprintf(stderr,"now2 = %d",now);
   symbolNode return_value = new_symbol_node(name, return_type->lineno, type_check(return_type->tokenString), 0,0);
-  insert_symbol(return_value);
+  succeed = insert_symbol(return_value);//把和函数名相同的返回值加入到符号表
   //fprintf(stderr,"look_func_decl1.7\n");
   add_loc_by_type(type_check(return_type->tokenString),1, BUCKET_SIZE);//把memloc加一个值，给返回值腾空间
   int pos = hash(name);
   (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc-4;
   //fprintf(stderr,"look_func_decl2\n");
-  succeed = insert_symbol(return_value);//把和函数名相同的返回值加入到符号表
+  //succeed = insert_symbol(return_value);//
   if(succeed == -1){
+      fprintf(stderr,"aa");
       fprintf(ERR,REDEFINE,return_value->lines->line,return_value->name);
+      fprintf(stderr,"aa");
     }
   //fprintf(stderr,"look_func_decl3\n");
   look_params(parameters);
@@ -519,7 +529,9 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   symbolNode node = new_symbol_node(name, id->lineno, Procedure, 0, 0);
   int succeed = insert_symbol(node);
   if(succeed == -1){
+      printf("aa");
       fprintf(ERR,REDEFINE,node->lines->line,node->name);
+      printf("aa");
   }
   //printf("now == == %d\n",(long)(now));
   symbolNode* proc_bucket;
@@ -614,7 +626,7 @@ int look_assign_stmt(TreeNode* subStmt){
   printf("%s %d\n",id->tokenString, variableType);
 
   if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){//写的不是变量
-    fprintf(ERR, ILLEGAL_LEFT_VALUE,-520);
+    fprintf(ERR, ILLEGAL_LEFT_VALUE,lineNum);
     return -1;
   }
   if(variableType == -1){//变量不存在
@@ -629,7 +641,7 @@ int look_assign_stmt(TreeNode* subStmt){
   int expressionType = get_expression_type(expression);
   //printf("aa");
   if( expressionType != variableType && !((expressionType == Integer)&&(variableType==Real)) ){//变量类型和表达式类型不同
-    fprintf(ERR, TYPEMIXED2,-519,type_string(variableType),type_string(expressionType));
+    fprintf(ERR, TYPEMIXED2,lineNum,type_string(variableType),type_string(expressionType));
     return -1;
   }
   else{
@@ -649,7 +661,7 @@ int look_while_stmt(TreeNode* subStmt){
     look_stmt(stmt);
   }
   else{
-    fprintf(ERR, TYPEMIXED3, -518, type_string(expression->type));
+    fprintf(ERR, TYPEMIXED3, lineNum, type_string(expression->type));
     //look_stmt(stmt);
     return -1;
   }
@@ -662,7 +674,7 @@ int look_if_stmt(TreeNode* subStmt){
   TreeNode* stmt2 = stmt1 -> sibling;
   expression->type = get_expression_type(expression);//表达式
   if(expression -> type != Boolean){
-    fprintf(ERR, TYPEMIXED2, -215, "boolean", type_string(expression->type));
+    fprintf(ERR, TYPEMIXED2, lineNum, "boolean", type_string(expression->type));
     return -1;
   }
   look_stmt(stmt1);//if语句
@@ -711,7 +723,7 @@ int look_repeat_stmt(TreeNode* subStmt){
   look_stmt_list_part(stmtList);
   int type = get_expression_type(expression);
   if(type != Boolean){
-    fprintf(ERR,TYPEMIXED2,-215,"boolean",type_string(type));
+    fprintf(ERR,TYPEMIXED2,lineNum,"boolean",type_string(type));
   }
   return 0;
 }
