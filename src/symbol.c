@@ -10,19 +10,19 @@ int layerNum = 0;
 void print_symbol_table(symbolNode* now){
 		symbolNode node;
 		int i;
-		printf("-------------------------------------------------------\n");
+		printf("---------------------------------------------------------------\n");
 		for(i=0;i<BUCKET_SIZE;i++){
 			node = (*(now+i));
       if(node != NULL){
-			  printf("%d   name=%s, type=%s, length=%d, another_type=%s lineno=%d\n",i,node->name, type_string(node->type), node->length, type_string(node->type_const_arrayType), node->lines->line);
+			  printf("%d   name=%s, type=%s, length=%d, another_type=%s lineno=%d memloc=%d\n ",i,node->name, type_string(node->type), node->length, type_string(node->type_const_arrayType), node->lines->line, node->memloc);
         while(node->nextNode != NULL){
           node = node -> nextNode;
-          printf("%d   name=%s, type=%s, length=%d, another_type=%s lineno=%d\n",i,node->name, type_string(node->type), node->length, type_string(node->type_const_arrayType), node->lines->line);
+          printf("%d   name=%s, type=%s, length=%d, another_type=%s lineno=%d memloc=%d\n",i,node->name, type_string(node->type), node->length, type_string(node->type_const_arrayType), node->lines->line, node->memloc);
         }
       }
 		}
     printf("memloc = %d\n",(*(now+BUCKET_SIZE))->memloc);
-		printf("-------------------------------------------------------\n");
+		printf("--------------------------------------------------------------\n");
 }
 
 int get_expression_type(TreeNode* exp){
@@ -450,7 +450,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
       }
       add_loc_by_type(type_check(type->tokenString),1, BUCKET_SIZE);
       int pos = hash(id->tokenString);
-      (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
+      (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc-4;
       //fprintf(stderr,"look params3\n");
       id = id->sibling;
     }
@@ -486,7 +486,7 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   //fprintf(stderr,"look_func_decl1.7\n");
   add_loc_by_type(type_check(return_type->tokenString),1, BUCKET_SIZE);//把memloc加一个值，给返回值腾空间
   int pos = hash(name);
-  (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
+  (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc-4;
   //fprintf(stderr,"look_func_decl2\n");
   succeed = insert_symbol(return_value);//把和函数名相同的返回值加入到符号表
   if(succeed == -1){
