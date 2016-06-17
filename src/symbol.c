@@ -539,7 +539,7 @@ int look_stmt(TreeNode* stmt){
     else if(strcmp(getNodeKindString(subStmt->nodekind),"CASE_STMT") == 0){
       look_case_stmt(subStmt);
     }
-    else if(strcmp(getNodeKindString(subStmt->nodekind),"COMPOUND_STMT") == 0){
+    else if(strcmp(getNodeKindString(subStmt->nodekind),"STMT_LIST") == 0){
       look_compound_stmt(subStmt);
     }
     else
@@ -556,6 +556,11 @@ int look_stmt_list_part(TreeNode* stmtList){
 
 
 int look_proc_stmt(TreeNode* subStmt){
+  TreeNode* func_name = subStmt -> child;
+  TreeNode* func_params = func_name -> sibling;
+  if(func_params != NULL){
+    TreeNode* param;
+  }
   return 0;  
 }
 /*赋值表达式类型检查*/
@@ -619,14 +624,20 @@ int look_while_stmt(TreeNode* subStmt){
 }
 
 int look_for_stmt(TreeNode* subStmt){
+  //printf("c\n");
   TreeNode* id = subStmt->child;
   TreeNode* expression1 = id->sibling;
   TreeNode* expression2 = expression1 -> sibling -> sibling;
   TreeNode* stmt = expression2 -> sibling;
-  symbolNode loopVar = st_lookup(now, id);
+  symbolNode loopVar = st_lookup(now, id->tokenString);
+  //printf("%s\n",id->tokenString);
+  //printf("loopVar = %d\n",loopVar);
   int varType = loopVar -> type;
+  id->type = loopVar -> type;
+  //printf("c\n");
   int exp1Type = get_expression_type(expression1);
   int exp2Type = get_expression_type(expression2);
+  //printf("c\n");
   if(varType != Integer){//循环变量不是integer
     fprintf(ERR, TYPEMIXED2, id->lineno, "integer", type_string(varType));    
     return -1;
@@ -640,6 +651,7 @@ int look_for_stmt(TreeNode* subStmt){
     return -1;
   }
   else {//正确的情况
+    printf("b\n");
     look_stmt(stmt);
     return 0;
   }
@@ -655,6 +667,8 @@ int look_case_stmt(TreeNode* subStmt){
   return 0;  
 }
 int look_compound_stmt(TreeNode* subStmt){
+  //printf("a\n");
+  look_stmt_list_part(subStmt);
   return 0;  
 }
 
