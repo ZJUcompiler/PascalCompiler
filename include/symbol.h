@@ -22,7 +22,8 @@
 #define TYPEMIXED2 "line %d : Expected '%s', however, a '%s' type got\n"
 #define TYPEMIXED3 "line %d : Expected 'boolean', however, a '%s' type got\n"
 #define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
-#define NO_SUCH_SYMBOL "No such symbol named \n"
+#define NO_SUCH_SYMBOL "line %d : No such symbol named '%s'\n"
+
 
 #define ERR stderr
 

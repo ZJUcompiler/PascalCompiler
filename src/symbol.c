@@ -26,12 +26,12 @@ void print_symbol_table(symbolNode* now){
 }
 
 int get_expression_type(TreeNode* exp){
-  //printf("%s\n",getNodeKindString(exp -> child -> nodekind));
+  printf("%s\n",getNodeKindString(exp -> child -> nodekind));
   return exp->type = get_sonex_type(exp->child);
 }
 int get_sonex_type(TreeNode* exp){
   char* nodekind = getNodeKindString(exp -> nodekind);
-  //等式
+  //加减乘除
   if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_SUB")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0 ){
     return exp->type = get_exp_cal_type(exp);
   }
@@ -41,8 +41,21 @@ int get_sonex_type(TreeNode* exp){
       return exp->type = Boolean;
     }
   }
-  else if(strcmp(nodekind,"ID") == 0){
+  else if(strcmp(nodekind,"EXP_AND") == 0 || strcmp(nodekind,"EXP_AND") == 0){
+    TreeNode* left = exp->child;
+    TreeNode* right = left ->sibling->sibling;
+    if(strcmp(getNodeKindString(left->nodekind),"SYS_CON")==0 && strcmp(getNodeKindString(right->nodekind),"SYS_CON") == 0){
+      return exp->type = Boolean;
+    }
+    else
+      return -1;
+  }
+  else if(strcmp(nodekind,"ID") == 0){//ID的类型
     symbolNode thisNode = st_lookup(now, exp->tokenString);
+    if(thisNode == NULL){
+      fprintf(ERR,NO_SUCH_SYMBOL,exp->lineno,exp->tokenString);
+      return -1;
+    }
     int type = thisNode -> type;
     return type;
   }
@@ -558,17 +571,19 @@ int look_assign_stmt(TreeNode* subStmt){
   else{//正常变量
     index = NULL;
   }
+
   int variableType = get_type_by_name(id->tokenString);
   printf("%s %d\n",id->tokenString, variableType);
+
   if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){//写的不是变量
     fprintf(ERR, ILLEGAL_LEFT_VALUE,-520);
     return -1;
   }
   if(variableType == -1){//变量不存在
-    fprintf(ERR,"line %d: %s \'%s\'\n", id->lineno,NO_SUCH_SYMBOL, id->tokenString );
+    fprintf(ERR,NO_SUCH_SYMBOL, id->lineno,id->tokenString );
     return -1;
   }
-  else if(variableType == Array){
+  else if(variableType == Array){//变量类型为数组，则富节点的类型是数组元素的类型
     symbolNode ele = st_lookup(now, id->tokenString);
     variableType = ele -> type_const_arrayType;
     id -> type = variableType;
@@ -590,17 +605,43 @@ int look_assign_stmt(TreeNode* subStmt){
 int look_while_stmt(TreeNode* subStmt){
   TreeNode* expression = subStmt->child;
   TreeNode* stmt = expression->sibling;
+  printf("%s\n",getNodeKindString(expression->nodekind));
   if(get_expression_type(expression) == Boolean){
+    //printf("a\n");
     look_stmt(stmt);
   }
   else{
     fprintf(ERR, TYPEMIXED3, -518, type_string(expression->type));
+    //look_stmt(stmt);
     return -1;
   }
   return 0;  
 }
 
 int look_for_stmt(TreeNode* subStmt){
+  TreeNode* id = subStmt->child;
+  TreeNode* expression1 = id->sibling;
+  TreeNode* expression2 = expression1 -> sibling -> sibling;
+  TreeNode* stmt = expression2 -> sibling;
+  symbolNode loopVar = st_lookup(now, id);
+  int varType = loopVar -> type;
+  int exp1Type = get_expression_type(expression1);
+  int exp2Type = get_expression_type(expression2);
+  if(varType != Integer){//循环变量不是integer
+    fprintf(ERR, TYPEMIXED2, id->lineno, "integer", type_string(varType));    
+    return -1;
+  }
+  else if( exp1Type != Integer ){
+    fprintf(ERR, TYPEMIXED2, id->lineno, "integer", type_string(exp1Type));    
+    return -1;
+  }
+  else if( exp2Type != Integer ){
+    fprintf(ERR, TYPEMIXED2, id->lineno, "integer", type_string(exp2Type));    
+    return -1;
+  }
+  else {//正确的情况
+    return 0;
+  }
   return 0;  
 }
 int look_repeat_stmt(TreeNode* subStmt){
