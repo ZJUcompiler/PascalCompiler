@@ -64,6 +64,15 @@ int get_sonex_type(TreeNode* exp){
       return Boolean;
     return -1;
   }
+  else if(strcmp(nodekind,"FACTOR") == 0){
+    TreeNode* id;
+    TreeNode* argsList;
+    id = exp -> child;
+    argsList = id ->sibling;
+    symbolNode func = st_lookup(now,id->tokenString);
+    exp -> type = func->type_const_arrayType;
+    return exp->type;
+  }
   else{
     return exp->type = type_check(getNodeKindString(exp -> nodekind));
   }
