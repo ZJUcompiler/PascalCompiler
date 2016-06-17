@@ -18,7 +18,7 @@ call id
 if_f i8 op1 label
 jmp label
 
-op -> &id *id id 1 ($t0-$t7)
+op -> &id *id id 1 &*($t0-$t7) ($t0-$t7)
 label -> _$JMP$_Lx
 
 _$FUNC$name1$name2$name3$
