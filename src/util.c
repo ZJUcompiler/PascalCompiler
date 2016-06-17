@@ -19,6 +19,7 @@ TreeNode *newTokenTreeNode(NodeKind kind, char* tokenString){
 	t->sibling = NULL;
 	t->nodekind = kind;
 	t->nChild = 0;
+	t->lineno = lineno;
 	int len = strlen(tokenString);
 	t->tokenString = (char *)malloc(len + 1);
 	strcpy(t->tokenString, tokenString);
