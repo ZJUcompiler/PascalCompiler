@@ -40,6 +40,7 @@ typedef struct symbolNodeCon{
 
 extern symbolNode buckets[BUCKET_SIZE+1];
 
+void print_symbol_table(symbolNode* now);
 int hash(char*);
 int str2int(char*);
 void add_loc_by_type(int,int);//根据给出的类型自动增加memloc
@@ -71,7 +72,7 @@ symbolNode st_lookup(symbolNode*, char* name);
 symbolNode new_symbol_node(char* name, int def_line, int type, int length, int type_const_arrayType);
 int semantic_routine_head(TreeNode* routineHead);
 int semantic_routine_stmt_list(TreeNode* routineStmt);
-
+int semantic_routine(TreeNode* routine);
 int semantic_analysis(TreeNode* root);
 
 #endif

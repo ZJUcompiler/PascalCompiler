@@ -1,10 +1,12 @@
 #include "globals.h"
 #include "util.h"
+#include "symbol.h"
 
 int yyparse();
 extern int totalLine;
 extern TreeNode * root;
 extern int hasError;
+extern symbolNode buckets[BUCKET_SIZE+1];
 int traceflag = 0;
 int printflag = 0;
 int doSemantic = 1;
@@ -47,6 +49,10 @@ int main(int argc, char* argv[]){
 	if(doSemantic){
 		semantic_analysis(root);
 	}
+	printf("now == == %d\n",buckets);
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
+	print_symbol_table(  buckets  );
+	print_symbol_table(  (*(buckets+19))->nextBucket  );
+	print_symbol_table(  (*(buckets+29))->nextBucket  );
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 }

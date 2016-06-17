@@ -54,7 +54,7 @@ void printTreeNode(TreeNode* treeNode){
 	char *name = getNodeKindString(treeNode->nodekind);
 	int isTerm = isTerminal(treeNode->nodekind);
 	if (isTerm)
-		printf("<%s>[%s](%s)\n", name, treeNode->tokenString, type_string(treeNode->type));
+		printf("<%s>[%s]{%d}(%s)\n", name, treeNode->tokenString, treeNode->lineno, type_string(treeNode->type));
 	else
 		printf("%s\n", name);
 }
@@ -367,3 +367,20 @@ int toConstVal( TreeNode *tree )
             assert(0);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
