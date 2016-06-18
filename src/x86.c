@@ -91,6 +91,8 @@ static int labelCheck(char line[]) {
     char *tok;
     tok = strtok(line, " \r\n");
     if (tok != NULL) {
+        if (strcmp(tok, ".data") == 0)
+            return 6;
         if (tok[0] != '_')
             return -1; // not Label
         switch (tok[2]) {
@@ -175,18 +177,16 @@ static void instParse(char *line, char op1[], char op2[], char op3[],\
 static symbolNode loopBack(char *op) {
     symbolNode op_symnode = st_lookup(currSymtab, op);
     int i;
+    fprintf(CODE, "\tmovl\t%%ebp, %%eax\n");
     for (i = 0; i < layerNum; i++) {
-        if (i == 0)
-            fprintf(CODE, "\tmovl\t(%%ebp), %%eax\n");
-        else
-            fprintf(CODE, "\tmovl\t(%%eax), %%eax\n");
+        fprintf(CODE, "\tmovl\t(%%eax), %%eax\n");
     }
     return op_symnode;
 }
 void getValue(char *op, int op_type) {
     if (isNum(op)) {
         int num = atoi(op);
-        fprintf(CODE, "\tmovl\t%d, %%edx\n", num);
+        fprintf(CODE, "\tmovl\t$%d, %%edx\n", num);
         fprintf(CODE, "\tpushl\t%%edx\n");
     }
     else if (isReg(op)) {
@@ -239,17 +239,16 @@ void calcu(char *comm, int op1_type, int op2_type, int op3_type) {
         type = i32;
     }
     else if (isMUL(comm)) {
-        fprintf(CODE, "\tpopl\t%%edi\n");
-        fprintf(CODE, "\tpopl\t%%esi\n");
-        fprintf(CODE, "\tmull\t%%edi, %%esi\n");
-        fprintf(CODE, "\tpushl\t%%esi\n");
+        fprintf(CODE, "\tpopl\t%%eax\n");
+        fprintf(CODE, "\timull\t(%%esp), %%eax\n");
+        fprintf(CODE, "\tmovl\t%%eax, (%%esp)\n");
         type = i32;
     }
     else if (isDIV(comm)) {
-        fprintf(CODE, "\tpopl\t%%edi\n");
-        fprintf(CODE, "\tpopl\t%%esi\n");
-        fprintf(CODE, "\tdivl\t%%edi, %%esi\n");
-        fprintf(CODE, "\tpushl\t%%esi\n");
+        fprintf(CODE, "\tpopl\t%%eax\n");
+        fprintf(CODE, "\tcltd\n");
+        fprintf(CODE, "\tidivl\t(%%esp)\n");
+        fprintf(CODE, "\tmovl\t%%eax, (%%esp)\n");
         type = i32;
     }
     else if (isMOD(comm)) {
@@ -287,7 +286,6 @@ void calcu(char *comm, int op1_type, int op2_type, int op3_type) {
         fprintf(CODE, "\tpushl\t%%esi\n");
         type = f32;
     }
-    // ...
     else if (isLT(comm)) {
         type = typeAlign(op1_type, op2_type);
         if (type == i32) {
@@ -304,7 +302,7 @@ void calcu(char *comm, int op1_type, int op2_type, int op3_type) {
             fprintf(CODE, "\tfxch\t%%st(1)\n");
             fprintf(CODE, "\tfucomip\t%%st(1), %%st\n");
             fprintf(CODE, "\tfstp\t%%st(0)\n");
-            fprintf(CODE, "\tseta\t%%al\n");
+            fprintf(CODE, "\tsetl\t%%al\n");
             fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
             fprintf(CODE, "\tpopl\t%%edi\n");
             fprintf(CODE, "\tpopl\t%%esi\n");
@@ -313,7 +311,7 @@ void calcu(char *comm, int op1_type, int op2_type, int op3_type) {
     }
     else if (isEQ(comm)) {
         type = typeAlign(op1_type, op2_type);
-        if (type == i32 && type == i8) {
+        if (type == i32 || type == i8) {
             fprintf(CODE, "\tpopl\t%%edi\n");
             fprintf(CODE, "\tpopl\t%%esi\n");
             fprintf(CODE, "\tcmpl\t%%edi, %%esi\n");
@@ -385,9 +383,9 @@ static void writeBack(char *op3, int op3_type) {
 }
 
 static void makeStack(int stackSize) {
-    fprintf(CODE, "pushl %%ebp\n");
-    fprintf(CODE, "movl %%esp, %%ebp\n");
-    fprintf(CODE, "subl $%d, %%esp\n", stackSize);
+    fprintf(CODE, "\tpushl %%ebp\n");
+    fprintf(CODE, "\tmovl %%esp, %%ebp\n");
+    fprintf(CODE, "\tsubl $%d, %%esp\n", stackSize);
 }
 
 static void genPreDecl() {
@@ -403,19 +401,21 @@ static void genPostDecl() {
 }
 static void genInst(char *line) {
     char op1[32], op2[32], op3[32];
+    char line_back[256];
     int op1_type, op2_type, op3_type;
+    strcpy(line_back, line);
     char *tok = strtok(line, " \r\n");
     if (isLT(tok) || isEQ(tok) || isXOR(tok) || isOR(tok) || isAND(tok) || isADD(tok)\
             || isSUB(tok) || isMUL(tok) || isDIV(tok) || isMOD(tok) || isFADD(tok)\
             || isFMUL(tok) || isFDIV(tok)) {
-        instParse(line, op1, op2, op3, &op1_type, &op2_type, &op3_type);
+        instParse(line_back, op1, op2, op3, &op1_type, &op2_type, &op3_type);
         getValue(op1, op1_type);
         getValue(op2, op2_type);
         calcu(tok, op1_type, op2_type, op3_type);
         writeBack(op3, op3_type);
     }
     else if (isASN(tok)) {
-        instParse(line, op1, op2, op3, &op1_type, &op2_type, &op3_type);
+        instParse(line_back, op1, op2, op3, &op1_type, &op2_type, &op3_type);
         getValue(op1, op1_type);
         writeBack(op2, op2_type);
     }
@@ -424,11 +424,27 @@ static void genInst(char *line) {
         fprintf(CODE, "\tjmp\t%s\n", tok);
     }
     else if (isIF(tok)) {
+        tok = strtok(NULL, " \r\n");
+        tok = strtok(NULL, " \r\n");
+        op1_type = i8;
+        strcpy(op1, tok);
         getValue(op1, op1_type);
         tok = strtok(NULL, " \r\n");
         fprintf(CODE, "\tpopl\t%%edx\n");
         fprintf(CODE, "\tcmpb\t0, %%dl\n");
         fprintf(CODE, "\tje\t%s\n", tok);
+    }
+    else if (isARG(tok)) {
+        tok = strtok(NULL, " \r\n");
+        op1_type = i32;
+        strcpy(op1, tok);
+        getValue(op1, op1_type);
+        fprintf(CODE, "\tpushl\t%%edx\n");
+    }
+    else if (isCALL(tok)) {
+        tok = strtok(NULL, " \r\n");
+        strcpy(op1, tok);
+        fprintf(CODE, "\tcall\top1\n");
     }
 }
 static symbolNode getBucketbyName(char *name) {
@@ -446,6 +462,7 @@ static symbolNode getBucketbyName(char *name) {
     }
     return symnode;
 }
+static void genDataSection(FILE *ir);
 static void genTextSection(FILE *IR) {
     fprintf(CODE, ".section\t.text\n");
     char line[512], line_back[512], currBlock[128];
@@ -463,6 +480,8 @@ static void genTextSection(FILE *IR) {
                 break;
             case 1:
                 if (strlen(currBlock) != 0) {
+                    fprintf(CODE, "\tleave\n");
+                    fprintf(CODE, "\tret\n");
                     fprintf(CODE, ".LFE%d:\n", currFinID++);
                     fprintf(CODE, "\t.size\t%s, .-%s\n\n", currBlock, currBlock);
                 }
@@ -473,34 +492,38 @@ static void genTextSection(FILE *IR) {
                 makeStack(getMaxMemLoc(buckets));
                 break;
             case 2:
-                tok = strtok(line, " \r\n");
+            case 3:
+                //tok = strtok(line, " \r\n");
                 if (strlen(currBlock) != 0) {
                     fprintf(CODE, ".LFE%d:\n", currFinID++);
                     fprintf(CODE, "\t.size\t%s, .-%s\n\n", currBlock, currBlock);
                 }
-                fprintf(CODE, "\t.globl\t %s\n", tok+8);
-                fprintf(CODE, "\t.type\t %s,@function\n", tok+8);
-                fprintf(CODE, "%s:\n", tok+8);
-                strcpy(currBlock, tok);
+                fprintf(CODE, "\t.globl\t %s\n", line);
+                fprintf(CODE, "\t.type\t %s,@function\n", line);
+                fprintf(CODE, "%s:\n", line);
+                strcpy(currBlock, line);
 
-                symbolNode table = getBucketbyName(tok+8);
+                symbolNode table = getBucketbyName(line);
                 makeStack(getMaxMemLoc(table->nextBucket));
                 break;
-            case 3:
+            case 4:
                 fprintf(CODE, "%s:\n", tok);
                 break;
-            case 4: // enter data section
+            case 5: // enter data section
+            case 6:
+                fprintf(CODE, "\tleave\n");
+                fprintf(CODE, "\tret\n");
                 fprintf(CODE, ".LFE%d:\n", currFinID++);
                 fprintf(CODE, "\t.size\t%s, .-%s\n\n", currBlock, currBlock);
                 return;
         }
     }
 }
-static void genDataSection(FILE *IR) {
+static void genDataSection(FILE *ir) {
     fprintf(CODE, ".section\t.rodata\n");
 
     char line[512];
-    while (fgets(line, sizeof(line), IR) != NULL) {
+    while (fgets(line, sizeof(line), ir) != 0) {
         fprintf(CODE, "data: %s\n", line);
     }
 }
