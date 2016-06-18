@@ -47,6 +47,7 @@ void analysisArg(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
+	freopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/expression.pas", "r", stdin);
 
 	analysisArg(argc, argv);
 	yyparse();
@@ -57,17 +58,17 @@ int main(int argc, char* argv[]){
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
 	print_symbol_table(  buckets  );
 	if(printSymbol){
-		print_symbol_table(  (*(buckets+28))->nextBucket  );
-		print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );
-		print_symbol_table(  (*(buckets+48))->nextBucket  );
-		print_symbol_table(  (*(buckets+40))->nextBucket  );
+		print_symbol_table(  (*(buckets+0))->nextBucket  );
+		//print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );
+		//print_symbol_table(  (*(buckets+48))->nextBucket  );
+		//print_symbol_table(  (*(buckets+40))->nextBucket  );
 	}
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 
 	// gen Immediate
 	// IR = fopen("C:/Users/shorC/Documents/GitHub/PascalCompiler/test/expression.tac", "w");
-
-
+	IR = stdout;
+	codeGen(root);
 	// fclose(IR);
 	return 0;
 }

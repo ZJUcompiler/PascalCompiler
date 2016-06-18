@@ -33,7 +33,7 @@ TreeNode *newTokenTreeNode(NodeKind kind, char* tokenString){
 void deleteTreeNode(TreeNode *t)
 {
 	assert(t->child == NULL);
-	assert(t->sibling == NULL);
+//	assert(t->sibling == NULL);//bless me
 	if (t->tokenString)
 	{
 		free(t->tokenString);
@@ -353,20 +353,20 @@ int toConstVal( TreeNode *tree )
 {
     switch (tree->nodekind)
     {
-        case N_INTEGER: 
+        case N_INTEGER:
             return atoi(tree->tokenString);
         case N_REAL:
         	return (int)atof(tree->tokenString);
         case N_SYS_CON:
             if (strcmp(tree->tokenString, "true")==0)
-                return 1;    
+                return 1;
             else if(strcmp(tree->tokenString, "maxint")==0)
                 return (int)2147483648;
             else if(strcmp(tree->tokenString, "false")==0)
                 return 0;
             assert(0);
             break;
-        default: 
+        default:
             assert(0);
     }
 }

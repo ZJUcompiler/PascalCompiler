@@ -79,7 +79,7 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
     TreeNode *p1, *p2;
     char *varId = t0;
     assert( isExpK(tree) );
-
+    O0(tree);
     // use function returns to avoid MACRO definition
     // (to avoid design complication/duplication)
     if ( isOpK(tree) )
@@ -639,14 +639,14 @@ static void genStmt(TreeNode *tree) {
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
             genStmt(stmt->child);
             if (else_clause->child == NULL) {
-                fprintf(IR, "_$JMP$_L%d:\n", L1);
+                fprintf(IR, "_$JMP$_L%d\n", L1);
             }
             else {
                 int L2 = labelNum++;
                 fprintf(IR, "jmp _$JMP$_L%d\n", L2);
-                fprintf(IR, "_$JMP$_L%d:\n", L1);
+                fprintf(IR, "_$JMP$_L%d\n", L1);
                 genStmt(else_clause->child);
-                fprintf(IR, "_$JMP$_L%d:\n", L2);
+                fprintf(IR, "_$JMP$_L%d\n", L2);
             }
             break;
         }
@@ -655,7 +655,7 @@ static void genStmt(TreeNode *tree) {
             TreeNode *stmt_list = tree->child;
             TreeNode *exp = stmt_list->sibling->child;
             int L1 = labelNum++;
-            fprintf(IR, "_$JMP$_L%d:\n", L1);
+            fprintf(IR, "_$JMP$_L%d\n", L1);
             genStmtList(stmt_list);
             TypeVar exprTp;
             char *exprId = genExp(exp, &exprTp);
@@ -670,11 +670,11 @@ static void genStmt(TreeNode *tree) {
             char *exprId = genExp(exp, &exprTp);
             int L1 = labelNum++;
             int L2 = labelNum++;
-            fprintf(IR, "_$JMP$_L%d:\n", L1);
+            fprintf(IR, "_$JMP$_L%d\n", L1);
             fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L2);
             genStmtList(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
-            fprintf(IR, "_$JMP$_L%d:\n", L2);
+            fprintf(IR, "_$JMP$_L%d\n", L2);
             break;
         }
         case N_FOR_STMT: {
@@ -690,7 +690,7 @@ static void genStmt(TreeNode *tree) {
             char *exprId1 = genExp(exp1, &exprTp1);
             char *exprId2 = genExp(exp2, &exprTp2);
             fprintf(IR, "asn i32 %s i32 %s\n", exprId1, id->tokenString);
-            fprintf(IR, "_$JMP$_L%d:\n", L1);
+            fprintf(IR, "_$JMP$_L%d\n", L1);
             if (direct->nodekind == N_TO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", exprId2, id->tokenString, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // bt -> 1 == 0 = 0 -> jump
@@ -702,7 +702,7 @@ static void genStmt(TreeNode *tree) {
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L2);
             genStmt(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
-            fprintf(IR, "_$JMP$_L%d:\n", L2);
+            fprintf(IR, "_$JMP$_L%d\n", L2);
             break;
         }
         case N_CASE_STMT: {
@@ -736,12 +736,12 @@ static void genStmt(TreeNode *tree) {
             while (case_expr != NULL) {
                 TreeNode *ch1 = case_expr->child;
                 L1++;
-                fprintf(IR, "_$JMP$_L%d:\n", L1);
+                fprintf(IR, "_$JMP$_L%d\n", L1);
                 genStmt(ch1->sibling->child);
                 fprintf(IR, "jmp _$JMP$_L%d\n", L2);
                 case_expr = case_expr->sibling;
             }
-            fprintf(IR, "_$JMP$_L%d:\n", L2);
+            fprintf(IR, "_$JMP$_L%d\n", L2);
             break;
         }
         case N_GOTO_STMT: {
@@ -792,7 +792,7 @@ static void genProc(TreeNode *tree, char *fatherFuncLabel)
         }
         p = p->sibling;
     }
-    fprintf(IR, "%s$%s:\n", fatherFuncLabel, id->tokenString);
+    fprintf(IR, "%s$%s\n", fatherFuncLabel, id->tokenString);
     genStmtList(stmt_list);
     fprintf(IR, "ret\n");
     cur_domain = cur_domain[BUCKET_SIZE]->nextBucket;
@@ -826,7 +826,7 @@ static void genFunc(TreeNode *tree, char *fatherFuncLabel) {
         p = p->sibling;
     }
 
-    fprintf(IR, "%s$%s:\n", fatherFuncLabel, id->tokenString);
+    fprintf(IR, "%s$%s\n", fatherFuncLabel, id->tokenString);
     genStmtList(stmt_list);
     fprintf(IR, "ret\n");
     cur_domain = cur_domain[BUCKET_SIZE]->nextBucket;
