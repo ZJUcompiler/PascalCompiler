@@ -43,10 +43,12 @@ int get_sonex_type(TreeNode* exp){
     }
   }
   else if(strcmp(nodekind,"EXP_AND") == 0 || strcmp(nodekind,"EXP_OR") == 0){
+    assert(exp->nChild == 2);
     TreeNode* left = exp->child;
-    TreeNode* right = left ->sibling->sibling;
-		int leftType = get_expression_type(left);
-		int rightType = get_expression_type(right);
+//    TreeNode* right = left ->sibling->sibling;
+    TreeNode* right = left ->sibling;
+		int leftType = get_sonex_type(left);
+		int rightType = get_sonex_type(right);
     if(strcmp(getNodeKindString(left->nodekind),"SYS_CON")==0 && strcmp(getNodeKindString(right->nodekind),"SYS_CON") == 0 || leftType == Boolean && rightType == Boolean){
       return exp->type = Boolean;
     }
@@ -740,7 +742,7 @@ int look_for_stmt(TreeNode* subStmt){
 int look_repeat_stmt(TreeNode* subStmt){
   TreeNode* stmtList = subStmt -> child;
   TreeNode* expression = stmtList -> sibling;
-  
+
   look_stmt_list_part(stmtList);
   int type = get_expression_type(expression);
   if(type != Boolean){
