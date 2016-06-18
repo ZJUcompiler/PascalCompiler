@@ -1,6 +1,7 @@
 program test;
 var bb:boolean;
 		bbbb,a:integer;
+		c: integer;
 		{c,d:boolean;
 		a:char;
 		a : array[1..25] of integer;}
