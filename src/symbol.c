@@ -42,7 +42,7 @@ int get_sonex_type(TreeNode* exp){
       return exp->type = Boolean;
     }
   }
-  else if(strcmp(nodekind,"EXP_AND") == 0 || strcmp(nodekind,"EXP_AND") == 0){
+  else if(strcmp(nodekind,"EXP_AND") == 0 || strcmp(nodekind,"EXP_OR") == 0){
     TreeNode* left = exp->child;
     TreeNode* right = left ->sibling->sibling;
     if(strcmp(getNodeKindString(left->nodekind),"SYS_CON")==0 && strcmp(getNodeKindString(right->nodekind),"SYS_CON") == 0){
