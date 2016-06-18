@@ -364,7 +364,7 @@ int look_var_part(TreeNode * varPart){
         }
         add_loc_by_type(type_check(eleType->tokenString), endIndex-startIndex+1, BUCKET_SIZE);//分配内存
         int pos = hash(idList->tokenString);
-        (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
+        (*(now+pos))->memloc = (*(now+BUCKET_SIZE))->memloc;
       }
       else if(isRecord == 1){
         //printf("dd\n");
@@ -396,7 +396,7 @@ int look_var_part(TreeNode * varPart){
             }
             add_loc_by_type(name->type,1, BUCKET_SIZE);
             int pos = hash(name->tokenString);
-            (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
+            (*(now+pos))->memloc = (*(now+BUCKET_SIZE))->memloc;
             name = name -> sibling;
           }
           fieldDecl = fieldDecl -> sibling;
@@ -421,7 +421,7 @@ int look_var_part(TreeNode * varPart){
         //fprintf(stderr,"7\n");
         add_loc_by_type(typeName,1, BUCKET_SIZE);//为简单类型分配空间
         int pos = hash(idList->tokenString);
-        (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc;
+        (*(now+pos))->memloc = (*(now+BUCKET_SIZE))->memloc;
         //fprintf(stderr,"7.5\n");
       }
       idList = idList -> sibling;
@@ -485,6 +485,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
     }
     paraType = paraType -> sibling;
   }
+	(*(now+BUCKET_SIZE))->memloc = 0;
   return 0;
 }
 /*解析一个函数function*/
