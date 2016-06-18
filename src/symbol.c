@@ -77,15 +77,22 @@ int get_sonex_type(TreeNode* exp){
     symbolNode* temp = now;
     while(func->type != Function){
       temp = (*(temp+BUCKET_SIZE))->nextBucket;
-      if(temp == NULL)
+      if(temp == NULL){
+        //printf("y");
         break;
-      st_lookup(temp,id->tokenString);
+      }
+      func = st_lookup(temp,id->tokenString);
     }
     if(func->type != Function){
-      printf("还是untion？？\n");
+      //printf("还是untion？？\n");
       fprintf(ERR, NO_SUCH_SYMBOL,id->lineno,id->tokenString);
     }
     exp -> type = func->type_const_arrayType;
+    TreeNode* expression = argsList->child;
+    while(expression != NULL){
+      get_expression_type(expression);
+      expression = expression -> sibling;
+    }
     return exp->type;
   }
   else{
