@@ -522,9 +522,9 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   //fprintf(stderr,"look_func_decl2\n");
   //succeed = insert_symbol(return_value);//
   if(succeed == -1){
-      fprintf(stderr,"aa");
+      //fprintf(stderr,"aa");
       fprintf(ERR,REDEFINE,return_value->lines->line,return_value->name);
-      fprintf(stderr,"aa");
+      //fprintf(stderr,"aa");
     }
   //fprintf(stderr,"look_func_decl3\n");
   look_params(parameters);
@@ -647,7 +647,7 @@ int look_assign_stmt(TreeNode* subStmt){
   }
 
   int variableType = get_type_by_name(id->tokenString);
-  printf("%s %d\n",id->tokenString, variableType);
+  //printf("%s %d\n",id->tokenString, variableType);
 
   if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){//写的不是变量
     fprintf(ERR, ILLEGAL_LEFT_VALUE,lineNum);
