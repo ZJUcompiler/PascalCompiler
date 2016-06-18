@@ -27,7 +27,7 @@ void print_symbol_table(symbolNode* now){
 }
 /*获取表达式的类型*/
 int get_expression_type(TreeNode* exp){
-  printf("%s\n",getNodeKindString(exp -> child -> nodekind));
+  //printf("%s\n",getNodeKindString(exp -> child -> nodekind));
   return exp->type = get_sonex_type(exp->child);
 }
 int get_sonex_type(TreeNode* exp){
@@ -71,8 +71,20 @@ int get_sonex_type(TreeNode* exp){
     TreeNode* id;
     TreeNode* argsList;
     id = exp -> child;
+    //printf("%s,%d\n",id->tokenString,st_lookup(now,id->tokenString)->type_const_arrayType );
     argsList = id ->sibling;
     symbolNode func = st_lookup(now,id->tokenString);
+    symbolNode* temp = now;
+    while(func->type != Function){
+      temp = (*(temp+BUCKET_SIZE))->nextBucket;
+      if(temp == NULL)
+        break;
+      st_lookup(temp,id->tokenString);
+    }
+    if(func->type != Function){
+      printf("还是untion？？\n");
+      fprintf(ERR, NO_SUCH_SYMBOL,id->lineno,id->tokenString);
+    }
     exp -> type = func->type_const_arrayType;
     return exp->type;
   }
@@ -88,7 +100,7 @@ int get_exp_cal_type(TreeNode* exp){
   child1 -> type = get_sonex_type(child1);
   child2 -> type = get_sonex_type(child2);
   if(child1 -> type == child2 -> type){
-    printf("%d\n",child1->type);
+    //printf("%d\n",child1->type);
     return child1->type;
   }
   else if((child1->type == 2 || child1->type == 3) && (child2->type == 2 || child2->type == 3)){
@@ -529,9 +541,9 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   symbolNode node = new_symbol_node(name, id->lineno, Procedure, 0, 0);
   int succeed = insert_symbol(node);
   if(succeed == -1){
-      printf("aa");
+      //printf("aa");
       fprintf(ERR,REDEFINE,node->lines->line,node->name);
-      printf("aa");
+      //printf("aa");
   }
   //printf("now == == %d\n",(long)(now));
   symbolNode* proc_bucket;
