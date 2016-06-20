@@ -279,13 +279,24 @@ int look_type_part(TreeNode * typePart){
     //fprintf(stderr,"looktypepart0.5\n");
 		typeDecl = name -> sibling;
     //fprintf(stderr,"looktypepart1\n");
-
-    if(strcmp(getNodeKindString(typeDecl->child->nodekind),"SIMPLE_TYPE_DECL") == 0){
-		  node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type_check(name->sibling->child->tokenString));//??????????
+		//printf("hehe\n");
+		int type = look_type_decl(typeDecl);
+		node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type);
+		int succeed = insert_symbol(node);
+		if(succeed == -1){
+      fprintf(ERR,REDEFINE,node->lines->line,node->name);
+			return -1;
+    }
+    /*if(strcmp(getNodeKindString(typeDecl->nodekind),"SIMPLE_TYPE_DECL") == 0){
+			//printf("haha\n");
+		  node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type_check(typeDecl->child->tokenString));//??????????
 		  int succeed = insert_symbol(node);
       if(succeed == -1){
         fprintf(ERR,REDEFINE,node->lines->line,node->name);
+				return -1;
       }
+			typeDecl -> child -> type = type_check(typeDecl -> child->tokenString);
+			typeDecl ->type = typeDecl -> child -> type;
     }
     else if(strcmp(getNodeKindString(typeDecl->child->nodekind),"ARRAY_TYPE_DECL") == 0){
         TreeNode* start, *end, *eleType;
@@ -296,7 +307,8 @@ int look_type_part(TreeNode * typePart){
     }
     else if(strcmp(getNodeKindString(typeDecl->child->nodekind),"RECORD_TYPE_DECL") == 0){
 
-    }
+    }*/
+		name -> type = Type;
     typeDefinition = typeDefinition -> sibling;
 	}
   //fprintf(stderr,"%s  %d, %d\n",node->name,Type, node->type_const_arrayType);
@@ -305,29 +317,71 @@ int look_type_part(TreeNode * typePart){
 
 int look_simple_type_decl(TreeNode* decl){
 	TreeNode* subDecl = decl -> child;
+	printf("%s\n",getNodeKindString(subDecl->nodekind));
 	while(subDecl != NULL){
-		if(strcmp(getNodeKindString(subDecl->nodekind),"SYS_TYPE")){//SYS_TYPE
-			return subDecl->type = type_check(subDecl->tokenString);
+		if(strcmp(getNodeKindString(subDecl->nodekind),"SYS_TYPE") == 0){//SYS_TYPE
+			printf("integer\n");
+			return decl -> type = subDecl->type = type_check(subDecl->tokenString);
 		}
-		else if(strcmp(getNodeKindString(subDecl->nodekind),"ID")){//ID
+		else if(strcmp(getNodeKindString(subDecl->nodekind),"ID") == 0){//ID
 			int type = get_type_by_name(now, subDecl->tokenString);
 			if(type == -1){
 				fprintf(ERR, NO_SUCH_SYMBOL, subDecl->lineno, subDecl->tokenString);
 				return -1;
 			}
 		}
-		else if(strcmp(getNodeKindString(subDecl->nodekind),"INTEGER")){//const_value DOTDOT const_value
+		else if(strcmp(getNodeKindString(subDecl->nodekind),"INTEGER") == 0){//const_value DOTDOT const_value
 			TreeNode* maxIndex = subDecl ->sibling;
 			if(maxIndex != NULL){
 				subDecl->type = type_check(getNodeKindString(subDecl->nodekind));
 				maxIndex->type = type_check(getNodeKindString(maxIndex->nodekind));
-				return subDecl->type;
+				return decl->type = subDecl->type;
 			}
 		}
 		else{
 			return -1;
 		}
 		subDecl = subDecl -> sibling;
+	}
+	return -1;
+}
+
+int look_array_type_decl(TreeNode* decl){
+	TreeNode* left,*right;
+	left = decl -> child;
+	right = left -> sibling;
+	look_type_decl(left);
+	look_type_decl(right);
+	return decl ->type = Array;//decl->type = right->type;
+}
+
+int look_record_type_decl(TreeNode* decl){
+	TreeNode* field = decl ->child;
+	while (field != NULL){
+		TreeNode* nameList = field ->child;
+		TreeNode* id = nameList ->child;
+		TreeNode* typeDecl = nameList ->sibling;	
+		int type = look_type_decl(typeDecl);
+		while(id != NULL){
+			id -> type = type;
+			id = id -> sibling;
+		}
+		field = field -> sibling;
+	}
+	return Record;
+}
+
+int look_type_decl(TreeNode* decl){
+	if(strcmp(getNodeKindString(decl->nodekind),"SIMPLE_TYPE_DECL") == 0){
+		printf("SIMPLE_TYPE_DECL\n");
+		return look_simple_type_decl(decl);
+	}
+	else if(strcmp(getNodeKindString(decl->nodekind),"ARRAY_TYPE_DECL") == 0){
+		printf("ARRAY_TYPE_DECL\n");
+		return look_array_type_decl(decl);
+	}
+	else if(strcmp(getNodeKindString(decl->nodekind),"RECORD_TYPE_DECL") == 0){
+		return look_record_type_decl(decl);
 	}
 	return -1;
 }
@@ -797,8 +851,9 @@ int look_repeat_stmt(TreeNode* subStmt){
   }
   return 0;
 }
-int look_goto_stmt(TreeNode* subStmt){
-  return 0;
+int look_goto_stmt(TreeNode* subStmt){//文法中没有label part的文法，所以自然goto语句也不能用
+	fprintf(ERR, NO_GOTO);
+  return -1;
 }
 int look_case_stmt(TreeNode* subStmt){
 	TreeNode* expression;
@@ -901,7 +956,7 @@ int semantic_routine_head(TreeNode* routineHead){
   TreeNode* routinePart = varPart -> sibling;
   //fprintf(stderr,"3\n");
   look_const_part(constPart);
-  //fprintf(stderr,"3.5\n");
+  fprintf(stderr,"3.5\n");
   look_type_part(typePart);
   //fprintf(stderr,"3.6\n");
   look_var_part(varPart);
@@ -929,9 +984,4 @@ int semantic_analysis(TreeNode* root){
 	semantic_routine(routine);
   return 0;
 }
-
-
-
-
-
 

@@ -23,7 +23,7 @@
 #define TYPEMIXED3 "line %d : Expected 'boolean', however, a '%s' type got\n"
 #define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
 #define NO_SUCH_SYMBOL "line %d : No such symbol named '%s'\n"
-
+#define NO_GOTO "Sorry, Don't support to 'goto' clause, it is an unsafe usage!\n"
 
 #define ERR stderr
 
@@ -65,6 +65,9 @@ void look_ast();
 int look_const_part(TreeNode * constPart);
 int look_type_part(TreeNode * typePart);
 int look_simple_type_decl(TreeNode* decl);
+int look_array_type_decl(TreeNode* decl);
+int look_record_type_decl(TreeNode* decl);
+int look_type_decl(TreeNode* decl);
 int look_var_part(TreeNode * varPart);
 int look_routine_part(TreeNode * routinePart);
 symbolNode look_array_decl(char* name, int size, int type);
