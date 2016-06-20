@@ -58,11 +58,13 @@ void add_loc_by_type(int,int,int);//根据给出的类型自动增加memloc
 int type_check(char* name);
 char* type_string(int type);
 int find_expression_type(TreeNode* expression);
+int get_type_by_name(symbolNode* node, char * name);
 void init_bucket(symbolNode*);
 symbolNode* build_sym_tab(symbolNode* nodePointer);/*新建一张symbol table，指针初始化为全空*/
 void look_ast();
 int look_const_part(TreeNode * constPart);
 int look_type_part(TreeNode * typePart);
+int look_simple_type_decl(TreeNode* decl);
 int look_var_part(TreeNode * varPart);
 int look_routine_part(TreeNode * routinePart);
 symbolNode look_array_decl(char* name, int size, int type);
