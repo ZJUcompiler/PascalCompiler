@@ -406,7 +406,7 @@ int look_var_part(TreeNode * varPart){
       else if(isRecord == 1){//记录声明
         //printf("dd\n");
         node = new_symbol_node(idList->tokenString, idList->lineno, Record, 0, 0);//创建record的symbol node
-
+				idList->type = Record;
         int succeed = insert_symbol(node);
         if(succeed == -1){
           fprintf(ERR,REDEFINE,node->lines->line,node->name);
@@ -668,10 +668,17 @@ int look_assign_stmt(TreeNode* subStmt){
   TreeNode* id = subStmt -> child;
   TreeNode* expression = id->sibling;
   TreeNode* index = NULL;
-  if(expression -> sibling != NULL){//数组下表访问
+  if(expression -> sibling != NULL){//数组下表访问或者是record访问
     index = expression;
     expression = expression ->sibling;
-    index -> type = get_expression_type(index);
+		if(strcmp(getNodeKindString(id->nodekind),"ID") == 0){//record访问
+			symbolNode recordSelf = st_lookup(now, id->tokenString);
+			symbolNode attr = st_lookup(recordSelf->nextBucket, index->tokenString);
+			index->type = attr->type;
+		}
+		else{
+    	index -> type = get_expression_type(index);
+		}
   }
   else{//正常变量
     index = NULL;
@@ -698,6 +705,9 @@ int look_assign_stmt(TreeNode* subStmt){
     variableType = ele -> type_const_arrayType;
     id -> type = variableType;
   }
+	else if(variableType == Record){
+		variableType = index->type;
+	}
   int expressionType = get_expression_type(expression);
   //printf("aa");
   if( expressionType != variableType && !((expressionType == Integer)&&(variableType==Real)) ){//变量类型和表达式类型不同
