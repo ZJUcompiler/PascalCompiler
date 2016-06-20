@@ -22,7 +22,9 @@ void print_symbol_table(symbolNode* now){
         }
       }
 		}
+		printf("nowBucket = %d\n",now);
     printf("memloc = %d\n",(*(now+BUCKET_SIZE))->memloc);
+		printf("nextBucket = %d\n",(*(now+BUCKET_SIZE))->nextBucket);
 		printf("--------------------------------------------------------------\n");
 }
 /*获取表达式的类型*/
@@ -646,8 +648,13 @@ int look_assign_stmt(TreeNode* subStmt){
   else{//正常变量
     index = NULL;
   }
-
-  int variableType = get_type_by_name(id->tokenString);
+	
+	symbolNode idSymbol = st_lookup(now, id->tokenString);
+	if(idSymbol == NULL){
+		fprintf(ERR, NO_SUCH_SYMBOL, id->lineno, id->tokenString);
+		return -1;
+	}
+  int variableType = idSymbol -> type;
   //printf("%s %d\n",id->tokenString, variableType);
 
   if(strcmp(getNodeKindString(id->nodekind),"ID") != 0){//写的不是变量
@@ -810,9 +817,10 @@ int insert_symbol(symbolNode node){
 symbolNode st_lookup(symbolNode* node, char* name){
   int hashValue = hash(name);
   layerNum = 0;
-  symbolNode thisLine = *(node + hashValue);
+  symbolNode thisLine;
 
   while(node != NULL){
+		thisLine = *(node + hashValue);
     while(thisLine != NULL){
       if(strcmp(thisLine -> name,name ) == 0){
         return thisLine;
@@ -864,7 +872,7 @@ int semantic_routine_head(TreeNode* routineHead){
   return 0;
 }
 int semantic_routine_stmt_list(TreeNode* routineStmt){
-	printf("today1\n");
+	//printf("today1\n");
   look_stmt_list_part(routineStmt);
 }
 
