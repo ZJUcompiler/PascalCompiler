@@ -44,6 +44,7 @@ int get_sonex_type(TreeNode* exp){
   }
   else if(strcmp(nodekind,"EXP_AND") == 0 || strcmp(nodekind,"EXP_OR") == 0){
     assert(exp->nChild == 2);
+		printf("today\n");
     TreeNode* left = exp->child;
 //    TreeNode* right = left ->sibling->sibling;
     TreeNode* right = left ->sibling;
@@ -755,6 +756,24 @@ int look_goto_stmt(TreeNode* subStmt){
   return 0;
 }
 int look_case_stmt(TreeNode* subStmt){
+	TreeNode* expression;
+	TreeNode* exprList;
+	TreeNode* caseExpr;
+	expression = subStmt -> child;
+	exprList = expression ->sibling;
+	caseExpr = exprList ->child;
+	//printf("%s,%s\n",getNodeKindString(expression->nodekind),getNodeKindString(exprList->nodekind));
+	int expressionType = get_expression_type(expression);
+	while(caseExpr != NULL){
+		TreeNode* left = caseExpr ->child;
+		TreeNode* right = left -> sibling;
+		int leftType = get_sonex_type(left);
+		look_stmt(right);//冒号右面
+		if(leftType != expressionType){
+			fprintf(ERR, TYPEMIXED2, left->lineno, type_string(expression), type_string(leftType) );
+		}
+		caseExpr = caseExpr -> sibling;
+	}
   return 0;
 }
 int look_compound_stmt(TreeNode* subStmt){
@@ -845,6 +864,7 @@ int semantic_routine_head(TreeNode* routineHead){
   return 0;
 }
 int semantic_routine_stmt_list(TreeNode* routineStmt){
+	printf("today1\n");
   look_stmt_list_part(routineStmt);
 }
 

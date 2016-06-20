@@ -1,6 +1,6 @@
 program test;
 var bb:boolean;
-		bbbb,a:integer;
+		bbbb,a,A:integer;
 		c: integer;
 		{c,d:boolean;
 		a:char;
@@ -14,6 +14,14 @@ begin
 	a := 'a';
 end;
 begin
+	repeat
+		A:=A+1;
+	until A>10;
+	case (A)of
+		1:a:=a+1;
+		2:a:=a+1;
+		3:a:=a+1;
+	end;
 	{bbbb := 3;
 	repeat
 		a:=a+1;
