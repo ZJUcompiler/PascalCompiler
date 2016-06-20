@@ -108,9 +108,9 @@ static char *getNaiveK(TreeNode *tree, TypeVar *varType)
         else if (tree->type == Boolean) {
             *varType = I8;
             if (strcmp(tree->tokenString, "true")==0)
-                varId = "0";
-            else
                 varId = "1";
+            else
+                varId = "0";
         }
     }
     else if ( isCharK(tree) )
