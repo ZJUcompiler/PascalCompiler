@@ -459,6 +459,7 @@ static symbolNode getBucketbyName(char *name) {
     while (tok != NULL) {
         symnode = st_lookup(currBucket, tok);
         currBucket = symnode->nextBucket;
+        tok = strtok(NULL, "$\r\n");
     }
     return symnode;
 }
@@ -494,6 +495,8 @@ static void genTextSection(FILE *IR) {
             case 2:
             case 3:
                 //tok = strtok(line, " \r\n");
+                strcpy(line_back, line);
+                line[strlen(line)-1] = '\0';
                 if (strlen(currBlock) != 0) {
                     fprintf(CODE, ".LFE%d:\n", currFinID++);
                     fprintf(CODE, "\t.size\t%s, .-%s\n\n", currBlock, currBlock);
@@ -503,7 +506,7 @@ static void genTextSection(FILE *IR) {
                 fprintf(CODE, "%s:\n", line);
                 strcpy(currBlock, line);
 
-                symbolNode table = getBucketbyName(line);
+                symbolNode table = getBucketbyName(line_back);
                 makeStack(getMaxMemLoc(table->nextBucket));
                 break;
             case 4:
