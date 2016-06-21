@@ -23,7 +23,7 @@
 #define TYPEMIXED3 "line %d : Expected 'boolean', however, a '%s' type got\n"
 #define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
 #define NO_SUCH_SYMBOL "line %d : No such symbol named '%s'\n"
-
+#define NO_GOTO "Sorry, Don't support to 'goto' clause, it is an unsafe usage!\n"
 
 #define ERR stderr
 
@@ -58,11 +58,16 @@ void add_loc_by_type(int,int,int);//根据给出的类型自动增加memloc
 int type_check(char* name);
 char* type_string(int type);
 int find_expression_type(TreeNode* expression);
+int get_type_by_name(symbolNode* node, char * name);
 void init_bucket(symbolNode*);
 symbolNode* build_sym_tab(symbolNode* nodePointer);/*新建一张symbol table，指针初始化为全空*/
 void look_ast();
 int look_const_part(TreeNode * constPart);
 int look_type_part(TreeNode * typePart);
+int look_simple_type_decl(TreeNode* decl);
+int look_array_type_decl(TreeNode* decl);
+int look_record_type_decl(TreeNode* decl);
+int look_type_decl(TreeNode* decl);
 int look_var_part(TreeNode * varPart);
 int look_routine_part(TreeNode * routinePart);
 symbolNode look_array_decl(char* name, int size, int type);

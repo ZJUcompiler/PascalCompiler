@@ -74,12 +74,59 @@ static void emitCode(char*op, tacVal op1, tacVal op2, tacVal op3)
         getValTypeStr(op3.type), op3.id);
 }
 
-static char *genExp( TreeNode *tree, TypeVar *varType )
+static char *getNaiveK(TreeNode *tree, TypeVar *varType)
+{
+    char *varId = NULL;
+    if ( isIdK(tree) )
+    {
+        varId = tree->tokenString;
+        if (tree->type == Integer)
+            *varType = I32;
+        else if (tree->type == Real)
+            *varType = F32;
+        else if (tree->type == Boolean)
+            *varType = I8;
+        else if (tree->type == Array)
+            *varType = I32;
+        else if (tree->type == String)
+            *varType = I32;
+        else if (tree->type == Char)
+            *varType = I8;
+        else if (tree->type == Record)
+            *varType = I32; // address
+    }
+    else if ( isConstValK(tree) )
+    {
+        if (tree->type == Integer) {
+            *varType = I32;
+            varId = tree->tokenString;
+        }
+        else if (tree->type == Real) {
+            *varType = F32;
+            varId = m_ftoa(atof(tree->tokenString));
+        }
+        else if (tree->type == Boolean) {
+            *varType = I8;
+            if (strcmp(tree->tokenString, "true")==0)
+                varId = "1";
+            else
+                varId = "0";
+        }
+    }
+    else if ( isCharK(tree) )
+    {
+        *varType = I8;
+        varId = m_itoa((int)(tree->tokenString[1]));
+    }
+    return varId;
+}
+
+static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
 {
     TreeNode *p1, *p2;
-    char *varId = t0;
+    // char *varId = t0;
     assert( isExpK(tree) );
-    O0(tree);
+    // O0(tree);
     // use function returns to avoid MACRO definition
     // (to avoid design complication/duplication)
     if ( isOpK(tree) )
@@ -88,9 +135,15 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         p1 = tree->child;
         p2 = p1->sibling;
 
-        char *id1 = genExp(p1, &tp1);
-        char *id2 = genExp(p2, &tp2);
-        // assert(tp1 == tp2);
+        char *id1, *id2;
+
+        id1 = getNaiveK(p1, &tp1);
+        id2 = getNaiveK(p2, &tp2);
+
+        if(!id1) {genExp(p1, &tp1, t0); id1 = t0;}
+        if(!id2) {genExp(p2, &tp2, t1); id2 = t1;}
+
+
         tacVal op1 = newTac(id1, tp1), op2 = newTac(id2, tp2), op3 = newTac(varId, tp1);
 
         if (tree->type == Boolean)
@@ -219,8 +272,9 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         tacVal offs = newTac(_ofs, I32);
         tacVal loc = newTac(t0, I32);
         emitCode("add", addr, offs, loc);
-        fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3.type), loc.id,
+        fprintf(IR, "load %s %s %s\n", loc.id, getValTypeStr(op3.type), t0);
+        fprintf(IR, "asn %s %s %s %s\n",
+                            getValTypeStr(op3.type), t0,
                             getValTypeStr(op3.type), op3.id );
     }
     else if ( isArrK(tree) )
@@ -231,8 +285,11 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         p2 = p1->sibling;
         tacVal addr = newTac(p1->tokenString, I32);
 
-        //char *offsId = genExp(p2, &tp);
-        tacVal offs = newTac(t0, I32);
+        char *offsId;
+        offsId = getNaiveK(p2, &tp);
+        if (!offsId) {genExp(p2, &tp, t0); offsId = t0;}
+
+        tacVal offs = newTac(offsId, I32);
 
         assert(tp == I32);
         if (tree->type == Boolean)
@@ -255,12 +312,10 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
 
         tacVal loc = newTac(t1, I32);
         emitCode("add", addr, offs, loc);
-        fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3.type), loc.id,
+        fprintf(IR, "load %s %s %s\n", loc.id, getValTypeStr(op3.type), t1);
+        fprintf(IR, "asn %s %s %s %s\n",
+                            getValTypeStr(op3.type), t1,
                             getValTypeStr(op3.type), op3.id );
-
-        // fprintf(IR, "add %s %s %s\n", t0, t1, t0);
-        // fprintf(IR, "asn *%s %s\n", t0, varId);
     }
     // function call
     else if ( isCallK(tree) )
@@ -282,13 +337,13 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         while (p_arg)
         {
             TypeVar tp;
-            char *argId = genExp(p_arg->child, &tp);
+            char *argId;
+            if( !(argId = getNaiveK(p_arg->child, &tp) ) ) 
+                {genExp(p_arg->child, &tp, t0); argId = t0;}
             tacVal arg = newTac(argId, tp);
             fprintf(IR, "arg %s\n", arg.id);
-            // fprintf(IR, "arg %s %s\n", getValTypeStr(arg.type), arg.id);
             p_arg = p_arg->sibling;
         }
-        // assert(strcmp(varId, "$v0")==0);    // TODO: function return
         fprintf(IR, "call %s\n", p1->tokenString);
     }
     // not factor
@@ -302,11 +357,12 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         p2 = p1->sibling;
 
         TypeVar tp;
-        char *exprId = genExp(p2, &tp);
+        char *exprId;
+        if(!(exprId = getNaiveK(p2, &tp)))
+            { genExp(p2, &tp, t0); exprId = t0;}
         assert(tp == I8);
         tacVal expr = newTac(exprId, tp);
         emitCode("eq", expr, bfalse, op3);
-        // fprintf(IR, "eq %s 0 %s\n", t0, varId);
     }
     // minus factor
     else if ( isRevFacK(tree) )
@@ -315,7 +371,9 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         TypeVar tp;
         p1 = tree->child;
         p2 = p1->sibling;
-        char *exprId = genExp(p2, &tp);
+        char *exprId;
+        if(!(exprId = getNaiveK(p2, &tp)))
+            { genExp(p2, &tp, t0); exprId = t0;}
         tacVal expr = newTac(exprId, tp);
         if (tree->type == Integer)
         {
@@ -330,44 +388,6 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
             emitCode("fsub", izero, expr, op3);
         }
     }
-    // id or const
-    else if ( isIdK(tree) )
-    {
-        varId = tree->tokenString;
-        if (tree->type == Integer)
-            *varType = I32;
-        else if (tree->type == Real)
-            *varType = F32;
-        else if (tree->type == Boolean)
-            *varType = I8;
-        else if (tree->type == Array)
-            *varType = I32;
-        else if (tree->type == String)
-            *varType = I32;
-        else if (tree->type == Char)
-            *varType = I8;
-        else if (tree->type == Record)
-            *varType = I32; // address
-    }
-    else if ( isConstValK(tree) )
-    {
-        if (tree->type == Integer) {
-            *varType = I32;
-            varId = tree->tokenString;
-        }
-        else if (tree->type == Real) {
-            *varType = F32;
-            varId = m_ftoa(atof(tree->tokenString));
-        }
-        else if (tree->type == Boolean) {
-            *varType = I8;
-            if (strcmp(tree->tokenString, "true")==0)
-                varId = "0";
-            else
-                varId = "1";
-        }
-        // fprintf(IR, "asn %x %s _\n", toConstVal(tree), varId);
-    }
     else if ( isStringK(tree) )
     {
         // return string address on varId
@@ -379,19 +399,10 @@ static char *genExp( TreeNode *tree, TypeVar *varType )
         fprintf(IR, "asn i32 %s i32 %s _\n", label, varId);
         ct_insert_str(tree->tokenString, label);
     }
-    else if ( isCharK(tree) )
-    {
-        // what to do when a char occurs
-        *varType = I8;
-        varId = m_itoa((int)(tree->tokenString[1]));
-        // fprintf(IR, "asn %d %s _\n", (int)(tree->tokenString[1]), varId);
-    }
     else
     {
         assert(0);
     }
-
-    return varId;
 }
 
 int assignStmtCheck(TreeNode *stmt) {
@@ -450,7 +461,9 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *id = tree->child;
                     TreeNode *exp = id->sibling->child;
                     TypeVar tp;
-                    char *exprId = genExp(exp, &tp);
+                    char *exprId;
+                    if (!(exprId = getNaiveK(exp, &tp))) 
+                        { genExp(exp, &tp, t0); exprId = t0;}
                     if (id->type == Integer)
                     {
                         assert(tp == I32);
@@ -500,22 +513,32 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *exp_1 = id->sibling->child;
                     TreeNode *exp_2 = id->sibling->sibling->child;
                     TypeVar offsTp, exprTp;
-                    char *offsId = genExp(exp_1, &offsTp);
-                    char *exprId = genExp(exp_2, &exprTp);
+                    char *offsId, *exprId;
+                    if (!(offsId = getNaiveK(exp_1, &offsTp))) 
+                        { genExp(exp_1, &offsTp, t0); offsId = t0;}
+                    if (!(exprId = getNaiveK(exp_2, &exprTp))) 
+                        { genExp(exp_2, &exprTp, t1); exprId = t1;}
                     fprintf(IR, "add i32 %s i32 %s i32 %s\n", id->tokenString, offsId, t0);
-                    if (tree->type == Integer)
-                        fprintf(IR, "asn i32 %s i32 *$t0\n", exprId);
+                    if (tree->type == Integer) 
+                    {
+                        // fprintf(IR, "asn i32 %s i32 $t1\n", exprId);
+                        fprintf(IR, "store i32 %s %s\n", exprId, t0);
+                    }
                     else if (tree->type == Real)
                     {
-                        if (exprTp == I32)
-                            fprintf(IR, "asn i32 %s f32 *$t0\n", exprId);
-                        else if (exprTp == F32)
-                            fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                        if (exprTp == I32) {
+                            fprintf(IR, "asn i32 %s f32 %s\n", exprId, t1);
+                            fprintf(IR, "store f32 %s %s\n", t1, t0);
+                        }
+                        else if (exprTp == F32) {
+                            fprintf(IR, "store f32 %s %s\n", exprId, t0);
+                            // fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                        }
                     }
                     else if (tree->type == Boolean)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (tree->type == Char)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (tree->type == Array)
                         assert(0); // TODO
                     else if (tree->type == Record)
@@ -536,24 +559,28 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *id_1 = tree->child;
                     TreeNode *id_2 = id_1->sibling;
                     TreeNode *exp = id_2->sibling->child;
-                    char *exprId = genExp(exp, &exprTp);
+                    char *exprId;
+                    if (!(exprId = getNaiveK(exp, &exprTp))) 
+                        { genExp(exp, &exprTp, t1); exprId = t1;}
                     symbolNode node = st_lookup(cur_domain, id_1->tokenString);
                     symbolNode field = st_lookup(node->nextBucket, id_2->tokenString);
                     fprintf(IR, "add i32 %s i32 %d i32 %s\n",
                             id_1->tokenString, field->memloc,t0);
                     if (field->type == Integer)
-                        fprintf(IR, "asn i32 %s i32 *$t0\n", exprId);
+                        fprintf(IR, "store i32 %s $t0\n", exprId);
                     else if (field->type == Real)
                     {
-                        if (exprTp == I32)
-                            fprintf(IR, "asn i32 %s f32 *$t0\n", exprId);
+                        if (exprTp == I32) {
+                            fprintf(IR, "asn i32 %s f32 %s\n", exprId, t1);
+                            fprintf(IR, "store i32 %s $t0\n", t1);
+                        }
                         else if (exprTp == F32)
-                            fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                            fprintf(IR, "store f32 %s $t0\n", exprId);
                     }
                     else if (field->type == Boolean)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (field->type == Char)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (field->type == Array)
                         assert(0); // TODO
                     else if (field->type == Record)
@@ -563,7 +590,6 @@ static void genStmt(TreeNode *tree) {
                     else
                         assert(0);
 
-                    // fprintf(IR, "asn %s *%s _\n", res1, t0);
                     break;
                 }
             }
@@ -587,7 +613,9 @@ static void genStmt(TreeNode *tree) {
                     while(p)
                     {
                         TypeVar exprTp;
-                        char *exprId = genExp(p->child, &exprTp);
+                        char *exprId;
+                        if ( !(exprId = getNaiveK(p->child, &exprTp)))
+                            { genExp(p->child, &exprTp, t0); exprId = t0;}
                         fprintf(IR, "arg %s\n", exprId);
                         p = p->sibling;
                     }
@@ -607,7 +635,9 @@ static void genStmt(TreeNode *tree) {
                     while(p)
                     {
                         TypeVar exprTp;
-                        char *exprId = genExp(p->child, &exprTp);
+                        char *exprId;
+                        if ( !(exprId = getNaiveK(p->child, &exprTp)))
+                            { genExp(p->child, &exprTp, t0); exprId = t0;}
                         fprintf(IR, "arg %s\n", exprId);
                         p = p->sibling;
                     }
@@ -633,7 +663,9 @@ static void genStmt(TreeNode *tree) {
             TreeNode *stmt = tree->child->sibling;
             TreeNode *else_clause = stmt->sibling;
             TypeVar exprTp;
-            char *exprId = genExp(exp, &exprTp);
+            char *exprId;
+            if ( !(exprId = getNaiveK(exp, &exprTp)))
+                { genExp(exp, &exprTp, t0); exprId = t0;}
 
             int L1 = labelNum++;
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
@@ -658,7 +690,9 @@ static void genStmt(TreeNode *tree) {
             fprintf(IR, "_$JMP$_L%d\n", L1);
             genStmtList(stmt_list);
             TypeVar exprTp;
-            char *exprId = genExp(exp, &exprTp);
+            char *exprId;
+            if ( !(exprId = getNaiveK(exp, &exprTp)))
+                { genExp(exp, &exprTp, t0); exprId = t0;}
             fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L1);
             break;
         }
@@ -667,7 +701,9 @@ static void genStmt(TreeNode *tree) {
             TreeNode *exp = tree->child->child;
             TreeNode *stmt = tree->child->sibling;
             TypeVar exprTp;
-            char *exprId = genExp(exp, &exprTp);
+            char *exprId;
+            if ( !(exprId = getNaiveK(exp, &exprTp)))
+                { genExp(exp, &exprTp, t0); exprId = t0;}
             int L1 = labelNum++;
             int L2 = labelNum++;
             fprintf(IR, "_$JMP$_L%d\n", L1);
@@ -687,8 +723,12 @@ static void genStmt(TreeNode *tree) {
             int L1 = labelNum++;
             int L2 = labelNum++;
             TypeVar exprTp1, exprTp2;
-            char *exprId1 = genExp(exp1, &exprTp1);
-            char *exprId2 = genExp(exp2, &exprTp2);
+            char *exprId1;
+            if ( !(exprId1 = getNaiveK(exp1, &exprTp1)))
+                { genExp(exp1, &exprTp1, t0); exprId1 = t0;}
+            char *exprId2;
+            if ( !(exprId2 = getNaiveK(exp2, &exprTp2)))
+                { genExp(exp2, &exprTp2, t0); exprId2 = t0;}
             fprintf(IR, "asn i32 %s i32 %s\n", exprId1, id->tokenString);
             fprintf(IR, "_$JMP$_L%d\n", L1);
             if (direct->nodekind == N_TO) {
@@ -713,7 +753,9 @@ static void genStmt(TreeNode *tree) {
             int L2 = labelNum++;
             int L1;
             TypeVar exprTp;
-            char *exprId = genExp(exp, &exprTp);
+            char *exprId;
+            if ( !(exprId = getNaiveK(exp, &exprTp)))
+                { genExp(exp, &exprTp, t0); exprId = t0;}
             while (case_expr != NULL) {
                 TreeNode *ch1 = case_expr->child;
                 L1 = labelNum++;
@@ -725,7 +767,9 @@ static void genStmt(TreeNode *tree) {
                 // case_expr: const_value COLON stmt SEMI
                 else {
                     TypeVar constTp;
-                    char *constId = genExp(ch1, &constTp);
+                    char *constId;
+                        if ( !(constId = getNaiveK(exp, &constTp)))
+                            { genExp(exp, &constTp, t0); constId = t0;}
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", constId, ch1->tokenString, t0);
                     fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L1);
                 }

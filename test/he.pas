@@ -13,12 +13,12 @@ var bb, bbb, b : char ;
 	e : boolean;
 	f : name;
 function funcname(a,b:integer; c,d:char):integer;
-var 
-	funca:integer;
-	funcb:char;
 type
 	funcnam = string;
 	funcmm = integer;
+var 
+	funca:integer;
+	funcb:char;
 begin
 	funca := 2;
 end;
