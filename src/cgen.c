@@ -272,8 +272,9 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         tacVal offs = newTac(_ofs, I32);
         tacVal loc = newTac(t0, I32);
         emitCode("add", addr, offs, loc);
-        fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3.type), loc.id,
+        fprintf(IR, "load %s %s %s\n", loc.id, getValTypeStr(op3.type), t0);
+        fprintf(IR, "asn %s %s %s %s\n",
+                            getValTypeStr(op3.type), t0,
                             getValTypeStr(op3.type), op3.id );
     }
     else if ( isArrK(tree) )
@@ -311,8 +312,9 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
 
         tacVal loc = newTac(t1, I32);
         emitCode("add", addr, offs, loc);
-        fprintf(IR, "asn %s *%s %s %s\n",
-                            getValTypeStr(op3.type), loc.id,
+        fprintf(IR, "load %s %s %s\n", loc.id, getValTypeStr(op3.type), t1);
+        fprintf(IR, "asn %s %s %s %s\n",
+                            getValTypeStr(op3.type), t1,
                             getValTypeStr(op3.type), op3.id );
     }
     // function call
@@ -517,19 +519,26 @@ static void genStmt(TreeNode *tree) {
                     if (!(exprId = getNaiveK(exp_2, &exprTp))) 
                         { genExp(exp_2, &exprTp, t1); exprId = t1;}
                     fprintf(IR, "add i32 %s i32 %s i32 %s\n", id->tokenString, offsId, t0);
-                    if (tree->type == Integer)
-                        fprintf(IR, "asn i32 %s i32 *$t0\n", exprId);
+                    if (tree->type == Integer) 
+                    {
+                        // fprintf(IR, "asn i32 %s i32 $t1\n", exprId);
+                        fprintf(IR, "store i32 %s %s\n", exprId, t0);
+                    }
                     else if (tree->type == Real)
                     {
-                        if (exprTp == I32)
-                            fprintf(IR, "asn i32 %s f32 *$t0\n", exprId);
-                        else if (exprTp == F32)
-                            fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                        if (exprTp == I32) {
+                            fprintf(IR, "asn i32 %s f32 %s\n", exprId, t1);
+                            fprintf(IR, "store f32 %s %s\n", t1, t0);
+                        }
+                        else if (exprTp == F32) {
+                            fprintf(IR, "store f32 %s %s\n", exprId, t0);
+                            // fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                        }
                     }
                     else if (tree->type == Boolean)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (tree->type == Char)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (tree->type == Array)
                         assert(0); // TODO
                     else if (tree->type == Record)
@@ -558,18 +567,20 @@ static void genStmt(TreeNode *tree) {
                     fprintf(IR, "add i32 %s i32 %d i32 %s\n",
                             id_1->tokenString, field->memloc,t0);
                     if (field->type == Integer)
-                        fprintf(IR, "asn i32 %s i32 *$t0\n", exprId);
+                        fprintf(IR, "store i32 %s $t0\n", exprId);
                     else if (field->type == Real)
                     {
-                        if (exprTp == I32)
-                            fprintf(IR, "asn i32 %s f32 *$t0\n", exprId);
+                        if (exprTp == I32) {
+                            fprintf(IR, "asn i32 %s f32 %s\n", exprId, t1);
+                            fprintf(IR, "store i32 %s $t0\n", t1);
+                        }
                         else if (exprTp == F32)
-                            fprintf(IR, "asn f32 %s f32 *$t0\n", exprId);
+                            fprintf(IR, "store f32 %s $t0\n", exprId);
                     }
                     else if (field->type == Boolean)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (field->type == Char)
-                        fprintf(IR, "asn i8 %s i8 *$t0\n", exprId);
+                        fprintf(IR, "store i8 %s $t0\n", exprId);
                     else if (field->type == Array)
                         assert(0); // TODO
                     else if (field->type == Record)
