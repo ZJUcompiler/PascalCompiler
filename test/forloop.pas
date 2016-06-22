@@ -5,5 +5,5 @@ var i:integer;
 begin
 	r:=0;
 	for i:= 1 to 10 do r:=r+1;
-    { writeln(r); }
+    writeln(r);
 end.

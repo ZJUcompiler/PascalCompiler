@@ -8,9 +8,7 @@
 #include "stdio.h"
 #include <string.h>
 #include <symbol.h>
-#include <stdlib.h>
 #include <x86.h>
-#include <globals.h>
 
 FILE *CODE;
 
@@ -185,17 +183,17 @@ static int getValue(char *op, int op_type, int regID) {
     else if (isVar(op)) {
         symbolNode symnode = loopBack(op);
         if (op_type == f32 || op_type == i32) {
-            fprintf(CODE, "\tmovl\t-%d(%%edx), %%%s\n", symnode->memloc, reg);
+            fprintf(CODE, "\tmovl\t%d(%%edx), %%%s\n", (0 - symnode->memloc), reg);
             return regID;
         }
         else if (op_type == i8) {
 //            fprintf(CODE, "\tmovl\t0, %%eax\n");
             if (regID == AH) {
-                fprintf(CODE, "\tmovb\t-%d(%%edx), %%ah\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%d(%%edx), %%ah\n", (0 - symnode->memloc));
                 return AH;
             }
             else {
-                fprintf(CODE, "\tmovb\t-%d(%%edx), %%al\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%d(%%edx), %%al\n", (0 - symnode->memloc));
                 return AL;
             }
         }
@@ -225,7 +223,7 @@ static void LT_writeBack(char *op3) {
     }
     else if (isVar(op3)) {
         symbolNode symnode = loopBack(op3);
-        fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+        fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
     }
 }
 static void LT_calcu_f32() {
@@ -250,7 +248,7 @@ static void EQ_writeBack(char *op3) {
     }
     else if (isVar(op3)) {
         symbolNode symnode = loopBack(op3);
-        fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+        fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
     }
 }
 static void EQ_calcu_f32() {
@@ -516,7 +514,7 @@ static void arith_calcu_f32(const char *inst, char *op1, char *op2, const char *
     }
     else if (isVar(op3)) {
         symbolNode symnode = loopBack(op3);
-        fprintf(CODE, "\tfstps\t-%d(%%edx)\n", symnode->memloc);
+        fprintf(CODE, "\tfstps\t%d(%%edx)\n", 0 - symnode->memloc);
     }
 }
 
@@ -647,7 +645,7 @@ static void genInst(char *line, FILE *IR) {
             regID = getValue(op2, op2_type, EBX);
             findRegbyID(regID, reg2);
 
-            fprintf(CODE, "\tcmpl\t%s, %s\n", reg2, reg);
+            fprintf(CODE, "\tcmpl\t%%%s, %%%s\n", reg2, reg);
             fprintf(CODE, "\tsete\t%%al\n");
             EQ_writeBack(op3);
         }
@@ -689,7 +687,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i32("xorl", op1, op2, "$t2", op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovl\t%%ecx, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovl\t%%ecx, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
         else if (op1_type == i8 && op2_type == i8) {
@@ -699,7 +697,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i8("xorl", op1, op2, op3, op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
     }
@@ -712,7 +710,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i32("orl", op1, op2, "$t2", op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovl\t%%ecx, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovl\t%%ecx, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
         else if (op1_type == i8 && op2_type == i8) {
@@ -722,7 +720,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i8("orl", op1, op2, op3, op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
     }
@@ -735,7 +733,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i32("andl", op1, op2, "$t2", op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovl\t%%ecx, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovl\t%%ecx, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
         else if (op1_type == i8 && op2_type == i8) {
@@ -745,7 +743,7 @@ static void genInst(char *line, FILE *IR) {
             else if (isVar(op3)) {
                 logic_calcu_i8("andl", op1, op2, op3, op1_type, op2_type, op3_type);
                 symbolNode  symnode = loopBack(op3);
-                fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
             }
         }
     }
@@ -757,7 +755,7 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op3)) {
             arith_calcu_i32("addl", op1, op2, "$t2", op1_type, op2_type, op3_type);
             symbolNode  symnode = loopBack(op3);
-            fprintf(CODE, "\tmovl\t%%ecx, -%d(%%edx)\n", symnode->memloc);
+            fprintf(CODE, "\tmovl\t%%ecx, %d(%%edx)\n", 0 - symnode->memloc);
         }
     }
     else if (isSUB(tok)) {
@@ -768,7 +766,7 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op3)) {
             arith_calcu_i32("subl", op1, op2, "$t2", op1_type, op2_type, op3_type);
             symbolNode  symnode = loopBack(op3);
-            fprintf(CODE, "\tmovl\t%%ecx, -%d(%%edx)\n", symnode->memloc);
+            fprintf(CODE, "\tmovl\t%%ecx, %d(%%edx)\n", 0 - symnode->memloc);
         }
     }
     else if (isMUL(tok)) {
@@ -779,7 +777,7 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op3)) {
             mul_calcu_i32("imull", op1, op2, "$t2", op1_type, op2_type, op3_type);
             symbolNode  symnode = loopBack(op3);
-            fprintf(CODE, "\tmovl\t%%eax, -%d(%%edx)\n", symnode->memloc);
+            fprintf(CODE, "\tmovl\t%%eax, %d(%%edx)\n", 0 - symnode->memloc);
         }
     }
     else if (isDIV(tok)) {
@@ -793,7 +791,7 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op3)) {
             mul_calcu_i32("idivl", op1, op2, "$t2", op1_type, op2_type, op3_type);
             symbolNode  symnode = loopBack(op3);
-            fprintf(CODE, "\tmovl\t%%eax, -%d(%%edx)\n", symnode->memloc);
+            fprintf(CODE, "\tmovl\t%%eax, %d(%%edx)\n", 0 - symnode->memloc);
         }
     }
     else if (isMOD(tok)) {
@@ -807,7 +805,7 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op3)) {
             mul_calcu_i32("idivl", op1, op2, "$t2", op1_type, op2_type, op3_type);
             symbolNode  symnode = loopBack(op3);
-            fprintf(CODE, "\tmovl\t%%edx, -%d(%%edx)\n", symnode->memloc);
+            fprintf(CODE, "\tmovl\t%%edx, %d(%%edx)\n", 0 - symnode->memloc);
         }
     }
     else if (isFADD(tok)) {
@@ -843,11 +841,11 @@ static void genInst(char *line, FILE *IR) {
         else if (isVar(op2)) {
             symbolNode symnode = loopBack(op2);
             if (regID == AL) {
-                fprintf(CODE, "\tmovb\t%%al, -%d(%%edx)\n", symnode->memloc);
+                fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
             }
             else {
                 findRegbyID(regID, reg);
-                fprintf(CODE, "\tmovl\t%%%s, -%d(%%edx)\n", reg, symnode->memloc);
+                fprintf(CODE, "\tmovl\t%%%s, %d(%%edx)\n", reg, 0 - symnode->memloc);
             }
         }
     }
@@ -877,15 +875,15 @@ static void genInst(char *line, FILE *IR) {
         int argNum = 0, type;
 
         tok = strtok(NULL, " \r\n");
-        strcpy(argList[argNum], tok);
-        tok = strtok(NULL, " \r\n");
         if (strcmp(tok, "i32") == 0)
             type = i32;
         else if (strcmp(tok, "f32") == 0)
             type = f32;
         else if (strcmp(tok, "i8") == 0)
             type = i8;
-        argType[argNum++] = type;
+        argType[argNum] = type;
+        tok = strtok(NULL, " \r\n");
+        strcpy(argList[argNum++], tok);
 
         while (1) {
             fgets(line, sizeof(line), IR);
@@ -905,7 +903,14 @@ static void genInst(char *line, FILE *IR) {
                     findRegbyID(regID, reg);
                     fprintf(CODE, "\tpushl\t%%%s\n", reg);
                 }
+
                 tok = strtok(NULL, " \r\n");
+                symbolNode symnode = st_lookup(currSymtab, tok);
+                // return value
+                if (symnode->type == Function || symnode->type == Integer
+                        || symnode->type == Real || symnode->type == Boolean)
+                    fprintf(CODE, "\tsubl\t$4, %%esp\n");
+
                 if (isABS(tok)) {
                    fprintf(CODE, "\tcall\t_abs_int\n");
                 }
@@ -969,12 +974,14 @@ static symbolNode getBucketbyName(char *name) {
         currBucket = symnode->nextBucket;
         tok = strtok(NULL, "$\r\n");
     }
+    currSymtab = currBucket;
     return symnode;
 }
 static void genDataSection(FILE *ir);
 static void genTextSection(FILE *IR) {
     fprintf(CODE, ".section\t.text\n");
     char line[512], line_back[512], currBlock[128];
+    char name[32];
     char *tok;
     static int currFinID = 0;
 
@@ -988,6 +995,7 @@ static void genTextSection(FILE *IR) {
                 genInst(line, IR);
                 break;
             case 1:
+                currSymtab = buckets;
                 if (strlen(currBlock) != 0) {
                     fprintf(CODE, "\tleave\n");
                     fprintf(CODE, "\tret\n");
@@ -1002,21 +1010,25 @@ static void genTextSection(FILE *IR) {
                 break;
             case 2:
             case 3:
-                //tok = strtok(line, " \r\n");
                 strcpy(line_back, line);
-                line[strlen(line)-1] = '\0';
+                symbolNode table = getBucketbyName(line_back);
+                //tok = strtok(line, " \r\n");
+                tok = strtok(line, " $\r\n");
+                while (tok != NULL) {
+                    strcpy(name, tok);
+                    tok = strtok(NULL, " $\r\n");
+                }
                 if (strlen(currBlock) != 0) {
                     fprintf(CODE, "\tleave\n");
                     fprintf(CODE, "\tret\n");
                     fprintf(CODE, ".LFE%d:\n", currFinID++);
                     fprintf(CODE, "\t.size\t%s, .-%s\n\n", currBlock, currBlock);
                 }
-                fprintf(CODE, "\t.globl\t %s\n", line);
-                fprintf(CODE, "\t.type\t %s,@function\n", line);
-                fprintf(CODE, "%s:\n", line);
-                strcpy(currBlock, line);
+                fprintf(CODE, "\t.globl\t %s\n", name);
+                fprintf(CODE, "\t.type\t %s,@function\n", name);
+                fprintf(CODE, "%s:\n", name);
+                strcpy(currBlock, name);
 
-                symbolNode table = getBucketbyName(line_back);
                 makeStack(getMaxMemLoc(table->nextBucket));
                 break;
             case 4:
