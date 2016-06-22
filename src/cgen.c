@@ -344,7 +344,8 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             fprintf(IR, "arg %s %s\n", getValTypeStr(tp), arg.id);
             p_arg = p_arg->sibling;
         }
-        fprintf(IR, "call %s\n", p1->tokenString);
+        fprintf(IR, "call %s %s %s\n", p1->tokenString, 
+                getValTypeStr(*varType), varId);
     }
     // not factor
     else if ( isNotFacK(tree) )
