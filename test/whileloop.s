@@ -13,15 +13,15 @@ main:
 	movl	$0, %eax
 	movl	%ebp, %edx
 	movl	%eax, -8(%edx)
+_$JMP$_L0:
 	movl	%ebp, %edx
 	movl	-4(%edx), %eax
 	movl	$10, %ebx
 	cmpl	%ebx, %eax
 	setl	%al
 	movzbl	%al, %edi
-_$JMP$_L0:
 	cmpl	$0, %edi
-	je	_$JMP$_1
+	je	_$JMP$_L1
 	movl	$2, %eax
 	movl	%ebp, %edx
 	movl	-8(%edx), %edi
