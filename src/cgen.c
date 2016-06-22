@@ -707,7 +707,7 @@ static void genStmt(TreeNode *tree) {
             int L1 = labelNum++;
             int L2 = labelNum++;
             fprintf(IR, "_$JMP$_L%d\n", L1);
-            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L2);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L2);
             genStmtList(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d\n", L2);
