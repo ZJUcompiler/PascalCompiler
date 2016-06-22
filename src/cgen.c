@@ -616,7 +616,7 @@ static void genStmt(TreeNode *tree) {
                         char *exprId;
                         if ( !(exprId = getNaiveK(p->child, &exprTp)))
                             { genExp(p->child, &exprTp, t0); exprId = t0;}
-                        fprintf(IR, "arg %s\n", exprId);
+                        fprintf(IR, "arg %s %s\n", getValTypeStr(exprTp), exprId);
                         p = p->sibling;
                     }
                     fprintf(IR, "call %s\n", id->tokenString);
@@ -638,7 +638,7 @@ static void genStmt(TreeNode *tree) {
                         char *exprId;
                         if ( !(exprId = getNaiveK(p->child, &exprTp)))
                             { genExp(p->child, &exprTp, t0); exprId = t0;}
-                        fprintf(IR, "arg %s\n", exprId);
+                        fprintf(IR, "arg %s %s\n", getValTypeStr(exprTp), exprId);
                         p = p->sibling;
                     }
                     fprintf(IR, "call %s\n", id->tokenString);
