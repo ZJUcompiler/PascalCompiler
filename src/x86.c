@@ -72,6 +72,15 @@ static inline int isFDIV(const char *comm) {
 static inline int isASN(const char *comm) {
     return strcmp(comm, "asn") == 0;
 }
+static inline int isLOAD(const char *comm) {
+    return strcmp(comm, "load") == 0;
+}
+static inline int isLEA(const char *comm) {
+    return strcmp(comm, "lea") == 0;
+}
+static inline int isSTOR(const char *comm) {
+    return strcmp(comm, "stor") == 0;
+}
 static inline int isCALL(const char *comm) {
     return strcmp(comm, "call") == 0;
 }
@@ -117,12 +126,6 @@ static int isNum(char *op) {
 }
 static int isReg(char *op) {
     return op[0] == '$';
-}
-static int isAddr(char *op) {
-    return op[0] == '&';
-}
-static int isPointer(char *op) {
-    return op[0] == '*';
 }
 static inline int isVar(char *op) {
     return !(isNum(op) || isReg(op) || isAddr(op) || isPointer(op));
