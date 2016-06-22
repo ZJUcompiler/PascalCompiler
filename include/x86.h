@@ -34,7 +34,7 @@ static symbolNode *currSymtab = buckets;
 
 // op
 static inline int isNum(const char *op) {
-    return (op[0] < '9') && (op[0] > '0');
+    return (op[0] <= '9') && (op[0] >= '0');
 }
 static inline int isReg(const char *op) {
     return op[0] == '$';

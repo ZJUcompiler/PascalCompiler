@@ -1,5 +1,5 @@
 lt i32/f32 op1 i32/f32 op2 i8 op3
-eq i32/f32 op1 i32/f32 op2 i8 op3
+eq i32/f32/i8 op1 i32/f32/i8 op2 i8 op3
 xor i32/i8 op1 i32/i8 op2 i32/i8 op3
 or i32/i8 op1 i32/i8 op2 i32/i8 op3
 and i32/i8 op1 i32/i8 op2 i32/i8 op3
