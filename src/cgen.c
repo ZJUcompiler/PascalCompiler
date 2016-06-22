@@ -341,7 +341,7 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             if( !(argId = getNaiveK(p_arg->child, &tp) ) ) 
                 {genExp(p_arg->child, &tp, t0); argId = t0;}
             tacVal arg = newTac(argId, tp);
-            fprintf(IR, "arg %s\n", arg.id);
+            fprintf(IR, "arg %s %s\n", getValTypeStr(tp), arg.id);
             p_arg = p_arg->sibling;
         }
         fprintf(IR, "call %s\n", p1->tokenString);
