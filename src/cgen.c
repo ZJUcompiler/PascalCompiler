@@ -702,11 +702,11 @@ static void genStmt(TreeNode *tree) {
             TreeNode *stmt = tree->child->sibling;
             TypeVar exprTp;
             char *exprId;
+            int L1 = labelNum++;
+            fprintf(IR, "_$JMP$_L%d\n", L1);
             if ( !(exprId = getNaiveK(exp, &exprTp)))
                 { genExp(exp, &exprTp, t0); exprId = t0;}
-            int L1 = labelNum++;
             int L2 = labelNum++;
-            fprintf(IR, "_$JMP$_L%d\n", L1);
             fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L2);
             genStmtList(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
