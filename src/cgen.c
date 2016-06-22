@@ -693,7 +693,7 @@ static void genStmt(TreeNode *tree) {
             char *exprId;
             if ( !(exprId = getNaiveK(exp, &exprTp)))
                 { genExp(exp, &exprTp, t0); exprId = t0;}
-            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L1);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
             break;
         }
         case N_WHILE_STMT: {
