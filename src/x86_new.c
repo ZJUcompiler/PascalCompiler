@@ -190,9 +190,15 @@ static int getValue(char *op, int op_type, int regID) {
             return regID;
         }
         else if (op_type == i8) {
-            fprintf(CODE, "\tmovl\t0, %%eax\n");
-            fprintf(CODE, "\tmovb\t-%d(%%edx), %%al\n", symnode->memloc);
-            return AL;
+//            fprintf(CODE, "\tmovl\t0, %%eax\n");
+            if (regID == AH) {
+                fprintf(CODE, "\tmovb\t-%d(%%edx), %%ah\n", symnode->memloc);
+                return AH;
+            }
+            else {
+                fprintf(CODE, "\tmovb\t-%d(%%edx), %%al\n", symnode->memloc);
+                return AL;
+            }
         }
     }
     else if (isLabel(op)) {
@@ -232,7 +238,7 @@ static void LT_calcu_f32() {
     fprintf(CODE, "\tseta\t%%al\n");
 }
 static void LT_calcu_i32() {
-    fprintf(CODE, "\tcmpl\t%%edi, %%esi\n");
+    fprintf(CODE, "\tcmpl\t%%ebx, %%eax\n");
     fprintf(CODE, "\tsetl\t%%al\n");
 }
 static void EQ_writeBack(char *op3) {
@@ -262,10 +268,6 @@ static void EQ_calcu_f32() {
     fprintf(CODE, "\tfucomip\t%%st(1), %%st\n");
     fprintf(CODE, "\tfstp\t%%st(0)\n");
     fprintf(CODE, "\tcmove\t%%edx, %%eax\n");
-}
-static void EQ_calcu_i32() {
-    fprintf(CODE, "\tcmpl\t%%edi, %%esi\n");
-    fprintf(CODE, "\tsete\t%%al\n");
 }
 static void logic_calcu_i32(const char *inst, char *op1, char *op2, const char *op3,
                             int op1_type, int op2_type, int op3_type) {
@@ -646,7 +648,36 @@ static void genInst(char *line, FILE *IR) {
             regID = getValue(op2, op2_type, EBX);
             findRegbyID(regID, reg2);
 
-            EQ_calcu_i32();
+            fprintf(CODE, "\tcmpl\t%s, %s\n", reg2, reg);
+            fprintf(CODE, "\tsete\t%%al\n");
+            EQ_writeBack(op3);
+        }
+        else if (op1_type == i8 && op2_type == i8) {
+            if (!isReg(op1) && !isReg(op2)) {
+                regID = getValue(op1, op1_type, AL);
+                findRegbyID(regID, reg);
+                regID = getValue(op2, op2_type, AH);
+                findRegbyID(regID, reg2);
+                fprintf(CODE, "\tcmpb\t%%%s, %%%s\n", reg2, reg);
+                fprintf(CODE, "\tsete\t%%al\n");
+            }
+            else {
+                regID = getValue(op1, op1_type, EAX);
+                if (regID == AL) {
+                    fprintf(CODE, "\tmovzbl\t%%al, %%ebx\n");
+                    regID = EBX;
+                }
+                findRegbyID(regID, reg);
+                regID = getValue(op2, op2_type, EAX);
+                if (regID == AL) {
+                    fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+                    regID = EAX;
+                }
+                findRegbyID(regID, reg2);
+                fprintf(CODE, "\tcmpl\t%%%s, %%%s\n", reg, reg2);
+                fprintf(CODE, "\tsete\t%%al\n");
+
+            }
             EQ_writeBack(op3);
         }
     }
@@ -831,8 +862,13 @@ static void genInst(char *line, FILE *IR) {
         op1_type = i8;
         strcpy(op1, tok);
         regID = getValue(op1, op1_type, EAX);
+        if (regID == AL) {
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            regID = EAX;
+        }
+        findRegbyID(regID, reg);
         tok = strtok(NULL, " \r\n");
-        fprintf(CODE, "\tcmpb\t0, %%al\n");
+        fprintf(CODE, "\tcmpl\t$0, %%%s\n", reg);
         fprintf(CODE, "\tje\t%s\n", tok);
     }
     else if (isARG(tok)) {
@@ -985,6 +1021,7 @@ static void genTextSection(FILE *IR) {
                 makeStack(getMaxMemLoc(table->nextBucket));
                 break;
             case 4:
+                tok = strtok(line, " \r\n");
                 fprintf(CODE, "%s:\n", tok);
                 break;
             case 5: // enter data section
