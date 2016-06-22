@@ -29,12 +29,13 @@ void print_symbol_table(symbolNode* now){
 }
 /*获取表达式的类型*/
 int get_expression_type(TreeNode* exp){
-  //printf("%s\n",getNodeKindString(exp -> child -> nodekind));
+  //printf("dd%s\n",getNodeKindString(exp -> child -> nodekind));
   return exp->type = get_sonex_type(exp->child);
 }
 int get_sonex_type(TreeNode* exp){
   char* nodekind = getNodeKindString(exp -> nodekind);
   //加减乘除
+	//printf("dd\n");
   if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_MINUS")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0 ){
     return exp->type = get_exp_cal_type(exp);
   }
@@ -66,6 +67,8 @@ int get_sonex_type(TreeNode* exp){
       return -1;
     }
     int type = thisNode -> type;
+		if(type == 10 || type == 11)//函数或者过程
+			type = thisNode -> type_const_arrayType;
     return exp->type = type;
   }
   else if(strcmp(nodekind,"SYS_CON") == 0){
@@ -80,29 +83,70 @@ int get_sonex_type(TreeNode* exp){
     TreeNode* id;
     TreeNode* argsList;
     id = exp -> child;
-    //printf("%s,%d\n",id->tokenString,st_lookup(now,id->tokenString)->type_const_arrayType );
+		//printf("dd\n");
+    printf("id : %s\n",id->tokenString);
+
     argsList = id ->sibling;
-    symbolNode func = st_lookup(now,id->tokenString);
-    symbolNode* temp = now;
-    while(func->type != Function){
-      temp = (*(temp+BUCKET_SIZE))->nextBucket;
-      if(temp == NULL){
-        //printf("y");
-        break;
-      }
-      func = st_lookup(temp,id->tokenString);
-    }
-    if(func->type != Function){
-      //printf("还是untion？？\n");
-      fprintf(ERR, NO_SUCH_SYMBOL,id->lineno,id->tokenString);
-    }
-    exp -> type = func->type_const_arrayType;
-    TreeNode* expression = argsList->child;
-    while(expression != NULL){
-      get_expression_type(expression);
-      expression = expression -> sibling;
-    }
-    return exp->type;
+		TreeNode* expression = argsList->child;
+		while(expression != NULL){
+		  get_expression_type(expression);
+		  expression = expression -> sibling;
+		}
+		//printf("daad\n");
+		if(strcmp(getNodeKindString(id -> nodekind),"SYS_FUNCT" ) == 0){
+			expression = argsList->child;
+			expression = get_expression_type(expression);
+			//printf("ddsd\n");
+			if(strcmp(id -> tokenString,"abs" ) == 0){
+				id -> type = expression ->type;
+			}
+			else if(strcmp(id -> tokenString,"sqr" ) == 0){
+				id -> type = expression ->type;
+			}
+			else if(strcmp(id -> tokenString,"sqrt" ) == 0){
+				id -> type = Real;
+			}
+			else if(strcmp(id -> tokenString,"odd" ) == 0){
+				id -> type = Boolean;
+			}
+			else if(strcmp(id -> tokenString,"succ" ) == 0){
+				id -> type = expression ->type;
+			}
+			else if(strcmp(id -> tokenString,"pred" ) == 0){
+				id -> type = expression ->type;
+			}
+			else if(strcmp(id -> tokenString,"ord" ) == 0){
+				id -> type = Integer;
+			}
+			else if(strcmp(id -> tokenString,"chr" ) == 0){
+				printf("dasd\n");
+				id -> type = Char;
+			}
+			else{
+				fprintf(ERR, NO_SUCH_SYMBOL, id->lineno, id->tokenString);
+			}
+		}
+		else{
+		  symbolNode func = st_lookup(now,id->tokenString);
+			if(func == NULL){//找不到这个函数
+				printf(ERR,  NO_SUCH_SYMBOL, id->lineno, id->tokenString);
+			}
+		  symbolNode* temp = now;
+		  while(func->type != Function){
+		    temp = (*(temp+BUCKET_SIZE))->nextBucket;
+		    if(temp == NULL){
+		      //printf("y");
+		      break;
+		    }
+		    func = st_lookup(temp,id->tokenString);
+		  }
+		  if(func->type != Function){
+		    fprintf(ERR, NO_SUCH_SYMBOL,id->lineno,id->tokenString);
+		  }
+		  exp -> type = func->type_const_arrayType;
+
+		  return exp->type;
+		}
   }
   else{
     return exp->type = type_check(getNodeKindString(exp -> nodekind));
@@ -661,12 +705,13 @@ int look_stmt(TreeNode* stmt){
     if( strcmp(getNodeKindString(subStmt->nodekind),"PROC_STMT") == 0){//有了
       look_proc_stmt(subStmt);
     }
-    if( strcmp(getNodeKindString(subStmt->nodekind),"IF_STMT") == 0){//有了
+    else if( strcmp(getNodeKindString(subStmt->nodekind),"IF_STMT") == 0){//有了
       look_if_stmt(subStmt);
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){//有了
+			printf("dad\n");
       look_assign_stmt(subStmt);
-      //printf("dd");
+      printf("dd\n");
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"WHILE_STMT") == 0){//有了
       look_while_stmt(subStmt);
@@ -709,8 +754,30 @@ int look_proc_stmt(TreeNode* subStmt){
       param = param -> sibling;
     }
   }
-  symbolNode func = st_lookup(now, func_name->tokenString);
- // printf("now = %d, %s\n",now,func_name->tokenString);
+	func_name -> type = Procedure;
+	symbolNode func = st_lookup(now, func_name->tokenString);
+	//printf("a?\n");
+	if(strcmp(getNodeKindString(func_name->nodekind),"ID") == 0){
+	 // printf("now = %d, %s\n",now,func_name->tokenString);
+		if(func == NULL){
+			//printf("a?\n");
+			fprintf(ERR, NO_SUCH_SYMBOL, func_name->lineno, func_name->tokenString);
+			return -1;
+		}
+	}
+	else if(strcmp(getNodeKindString(func_name->nodekind),"READ") == 0){//系统函数
+		return 0;
+	}
+	else if(strcmp(getNodeKindString(func_name->nodekind),"WRITE") == 0){
+		return 0;
+	}
+	else if(strcmp(getNodeKindString(func_name->nodekind),"WRITELN") == 0){
+		return 0;
+	}
+	else{
+		fprintf(ERR, NO_SUCH_SYMBOL, func_name->lineno, func_name->tokenString);
+		return -1;
+	}
   subStmt -> type = func->type_const_arrayType;
   if(subStmt -> type >= 1 && subStmt -> type <= 11){
     //subStmt->nodekind =
@@ -870,7 +937,7 @@ int look_case_stmt(TreeNode* subStmt){
 		int leftType = get_sonex_type(left);
 		look_stmt(right);//冒号右面
 		if(leftType != expressionType){
-			fprintf(ERR, TYPEMIXED2, left->lineno, type_string(expression), type_string(leftType) );
+			fprintf(ERR, TYPEMIXED2, left->lineno, type_string(expression->type), type_string(leftType) );
 		}
 		caseExpr = caseExpr -> sibling;
 	}
