@@ -27,6 +27,12 @@ _$JMP$_L0:
 	cmpl	%edi, %eax
 	sete	%al
 	movzbl	%al, %edi
+	movl	$1, %eax
+	movl	%ebp, %edx
+	movl	-4(%edx), %ecx
+	addl	%eax, %ecx
+	movl	%ebp, %edx
+	movl	%ecx, -4(%edx)
 	cmpl	$0, %edi
 	je	_$JMP$_L1
 	movl	$1, %eax

@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <x86.h>
 #include <globals.h>
-//#include <bits/string2.h>
 
 FILE *CODE;
 
