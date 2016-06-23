@@ -83,23 +83,36 @@ int get_sonex_type(TreeNode* exp){
     TreeNode* id;
     TreeNode* argsList;
     id = exp -> child;
+		//printf("-------   %s\n",id->tokenString);
+		int count = 0;//参数个数
 		//printf("dd\n");
     //printf("id : %s\n",id->tokenString);
 
     argsList = id ->sibling;
 		TreeNode* expression = argsList->child;
 		while(expression != NULL){
+			count ++;
 		  expression -> type = get_expression_type(expression);
 			//printf("expression : %d \n",expression->type);
 		  expression = expression -> sibling;
 		}
+
 		//printf("id : %s\n",id->tokenString);
 		//printf("daad\n");
 		if(strcmp(getNodeKindString(id -> nodekind),"SYS_FUNCT" ) == 0){
+			if(count < 1){
+				fprintf(ERR,TOO_LITTLE_ARGS2, id->lineno);
+				return -1;
+			}
+			else if(count > 1){
+				fprintf(ERR,TOO_MANY_ARGS2, id->lineno);
+				return -1;
+			}
+
 			expression = argsList->child;
 			//printf("id : %s\n",id->tokenString);
 			expression->type = get_expression_type(expression);
-			//printf("exp : %s\n",getNodeKindString(argsList -> nodekind));
+			//printf("exp : %d\n",expression->type);
 			//printf("exp : %s\n",getNodeKindString(argsList -> child -> nodekind));
 			//printf("idd : %s %d\n","abs",strcmp(id -> tokenString,"abs" ) == 0);
 			//printf("ddsd\n");
@@ -137,15 +150,16 @@ int get_sonex_type(TreeNode* exp){
 			return exp->type = id->type;
 		}
 		else if(strcmp(id->tokenString,"-") == 0){//负号
+			//printf("id --- %d %d\n",id->sibling,argsList);
 			if(argsList == NULL){
-				printf(ERR,TOO_LITTLE_ARGS,id->lineno);
+				fprintf(ERR,TOO_LITTLE_ARGS,id->lineno);
 			}
 			return exp->type = get_sonex_type(argsList);//factor 又挂了factor
 		}
 		else{//不是系统函数
 		  symbolNode func = st_lookup(now,id->tokenString);
 			if(func == NULL){//找不到这个函数
-				printf(ERR,  NO_SUCH_SYMBOL, id->lineno, id->tokenString);
+				fprintf(ERR,  NO_SUCH_SYMBOL, id->lineno, id->tokenString);
 			}
 		  symbolNode* temp = now;
 		  while(func->type != Function){
@@ -173,6 +187,7 @@ int get_sonex_type(TreeNode* exp){
 int get_exp_cal_type(TreeNode* exp){
   TreeNode* child1 = exp -> child;
   TreeNode* child2 = child1 -> sibling;
+	//printf("%s\n",getNodeKindString(child1 -> nodekind));
   child1 -> type = get_sonex_type(child1);
   child2 -> type = get_sonex_type(child2);
   if(child1 -> type == child2 -> type){
@@ -377,10 +392,10 @@ int look_type_part(TreeNode * typePart){
 
 int look_simple_type_decl(TreeNode* decl){
 	TreeNode* subDecl = decl -> child;
-	printf("%s\n",getNodeKindString(subDecl->nodekind));
+	//printf("%s\n",getNodeKindString(subDecl->nodekind));
 	while(subDecl != NULL){
 		if(strcmp(getNodeKindString(subDecl->nodekind),"SYS_TYPE") == 0){//SYS_TYPE
-			printf("integer\n");
+			//printf("integer\n");
 			return decl -> type = subDecl->type = type_check(subDecl->tokenString);
 		}
 		else if(strcmp(getNodeKindString(subDecl->nodekind),"ID") == 0){//ID
@@ -433,11 +448,11 @@ int look_record_type_decl(TreeNode* decl){
 
 int look_type_decl(TreeNode* decl){
 	if(strcmp(getNodeKindString(decl->nodekind),"SIMPLE_TYPE_DECL") == 0){
-		printf("SIMPLE_TYPE_DECL\n");
+		//printf("SIMPLE_TYPE_DECL\n");
 		return look_simple_type_decl(decl);
 	}
 	else if(strcmp(getNodeKindString(decl->nodekind),"ARRAY_TYPE_DECL") == 0){
-		printf("ARRAY_TYPE_DECL\n");
+		//printf("ARRAY_TYPE_DECL\n");
 		return look_array_type_decl(decl);
 	}
 	else if(strcmp(getNodeKindString(decl->nodekind),"RECORD_TYPE_DECL") == 0){
@@ -908,7 +923,7 @@ int look_assign_stmt(TreeNode* subStmt){
 int look_while_stmt(TreeNode* subStmt){
   TreeNode* expression = subStmt->child;
   TreeNode* stmt = expression->sibling;
-  printf("%s\n",getNodeKindString(expression->nodekind));
+  //printf("%s\n",getNodeKindString(expression->nodekind));
   if(get_expression_type(expression) == Boolean){
     //printf("a\n");
     look_stmt(stmt);
@@ -963,7 +978,7 @@ int look_for_stmt(TreeNode* subStmt){
     return -1;
   }
   else {//正确的情况
-    printf("b\n");
+    //printf("b\n");
     look_stmt(stmt);
     return 0;
   }
