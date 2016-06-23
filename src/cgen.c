@@ -156,7 +156,7 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             {
                 case N_EXP_GE:
                     emitCode("lt", op1, op2, tmp0);
-                    emitCode("eq", tmp0, btrue, op3);
+                    emitCode("eq", tmp0, bfalse, op3);
                     break;
                 case N_EXP_GT:
                     emitCode("lt", op2, op1, op3);

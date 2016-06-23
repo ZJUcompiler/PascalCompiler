@@ -23,8 +23,13 @@ main:
 	cmpl	%ebx, %eax
 	setl	%al
 	movzbl	%al, %edi
+	movl	$0, %eax
+	cmpl	%edi, %eax
+	sete	%al
+	movzbl	%al, %edi
 	movl	%ebp, %edx
-	movl	%edi, -9(%edx)
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
 	movl	%ebp, %edx
 	movb	-9(%edx), %al
 	movzbl	%al, %eax
@@ -32,14 +37,15 @@ main:
 	subl	$4, %esp
 	call	_writeln_int
 	movl	%ebp, %edx
-	movl	-8(%edx), %eax
+	movl	-4(%edx), %eax
 	movl	%ebp, %edx
-	movl	-4(%edx), %ebx
+	movl	-8(%edx), %ebx
 	cmpl	%ebx, %eax
 	setl	%al
 	movzbl	%al, %edi
 	movl	%ebp, %edx
-	movl	%edi, -9(%edx)
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
 	movl	%ebp, %edx
 	movb	-9(%edx), %al
 	movzbl	%al, %eax
@@ -53,8 +59,11 @@ main:
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %edi
+	movl	$1, %eax
+	xorl	%eax, %edi
 	movl	%ebp, %edx
-	movl	%edi, -9(%edx)
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
 	movl	%ebp, %edx
 	movb	-9(%edx), %al
 	movzbl	%al, %eax
@@ -73,7 +82,8 @@ main:
 	sete	%al
 	movzbl	%al, %edi
 	movl	%ebp, %edx
-	movl	%edi, -9(%edx)
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
 	movl	%ebp, %edx
 	movb	-9(%edx), %al
 	movzbl	%al, %eax

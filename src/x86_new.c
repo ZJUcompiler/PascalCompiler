@@ -842,8 +842,15 @@ static void genInst(char *line, FILE *IR) {
         }
         else if (isVar(op2)) {
             symbolNode symnode = loopBack(op2);
-            if (regID == AL) {
-                fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
+            if (op2_type == i8) {
+                if (regID == AL) {
+                    fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
+                }
+                else {
+                    findRegbyID(regID, reg);
+                    fprintf(CODE, "\tmovl\t%%%s, %%eax\n", reg);
+                    fprintf(CODE, "\tmovb\t%%al, %d(%%edx)\n", 0 - symnode->memloc);
+                }
             }
             else {
                 findRegbyID(regID, reg);
