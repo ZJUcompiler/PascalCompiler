@@ -83,22 +83,14 @@ int get_sonex_type(TreeNode* exp){
     TreeNode* id;
     TreeNode* argsList;
     id = exp -> child;
-		//printf("-------   %s\n",id->tokenString);
 		int count = 0;//参数个数
-		//printf("dd\n");
-    //printf("id : %s\n",id->tokenString);
-
     argsList = id ->sibling;
 		TreeNode* expression = argsList->child;
 		while(expression != NULL){
 			count ++;
 		  expression -> type = get_expression_type(expression);
-			//printf("expression : %d \n",expression->type);
 		  expression = expression -> sibling;
 		}
-
-		//printf("id : %s\n",id->tokenString);
-		//printf("daad\n");
 		if(strcmp(getNodeKindString(id -> nodekind),"SYS_FUNCT" ) == 0){
 			if(count < 1){
 				fprintf(ERR,TOO_LITTLE_ARGS2, id->lineno);
@@ -110,16 +102,9 @@ int get_sonex_type(TreeNode* exp){
 			}
 
 			expression = argsList->child;
-			//printf("id : %s\n",id->tokenString);
 			expression->type = get_expression_type(expression);
-			//printf("exp : %d\n",expression->type);
-			//printf("exp : %s\n",getNodeKindString(argsList -> child -> nodekind));
-			//printf("idd : %s %d\n","abs",strcmp(id -> tokenString,"abs" ) == 0);
-			//printf("ddsd\n");
 			if(strcmp(id -> tokenString,"abs" ) == 0){
-				//printf("id : %d %d\n",id->type,expression->type);
 				id -> type = expression ->type;
-				//printf("id : %s\n",id->tokenString);
 			}
 			else if(strcmp(id -> tokenString,"sqr" ) == 0){
 				id -> type = expression ->type;
@@ -140,7 +125,6 @@ int get_sonex_type(TreeNode* exp){
 				id -> type = Integer;
 			}
 			else if(strcmp(id -> tokenString,"chr" ) == 0){
-				//printf("dasd\n");
 				id -> type = Char;
 			}
 			else{
@@ -150,7 +134,6 @@ int get_sonex_type(TreeNode* exp){
 			return exp->type = id->type;
 		}
 		else if(strcmp(id->tokenString,"-") == 0){//负号
-			//printf("id --- %d %d\n",id->sibling,argsList);
 			if(argsList == NULL){
 				fprintf(ERR,TOO_LITTLE_ARGS,id->lineno);
 			}
@@ -187,11 +170,9 @@ int get_sonex_type(TreeNode* exp){
 int get_exp_cal_type(TreeNode* exp){
   TreeNode* child1 = exp -> child;
   TreeNode* child2 = child1 -> sibling;
-	//printf("%s\n",getNodeKindString(child1 -> nodekind));
   child1 -> type = get_sonex_type(child1);
   child2 -> type = get_sonex_type(child2);
   if(child1 -> type == child2 -> type){
-    //printf("%d\n",child1->type);
     return child1->type;
   }
   else if((child1->type == 2 || child1->type == 3) && (child2->type == 2 || child2->type == 3)){
@@ -232,8 +213,6 @@ void add_loc_by_type(int type, int count, int pos){
   case Boolean:size=1;break;
   case String:size=256;break;
   }
-  //fprintf(stderr,"now = %d",(int)now);
-  //fprintf(stderr,"now_bucketsieze = %d",(int)(*(now+BUCKET_SIZE)));
 
   (*(now+pos))->memloc += size*count;
 }
@@ -328,7 +307,6 @@ int look_const_part(TreeNode * constPart){
     int def_line = id -> lineno;
     content -> type = type_check(getNodeKindString(content -> nodekind));
     id -> type = content -> type;
-    //fprintf(stderr,"%s\n",getNodeKindString(content -> nodekind));
     symbolNode constNode = new_symbol_node(id->tokenString, def_line, Const, 0, content -> type);
     int succeed = insert_symbol(constNode);
     if(succeed == -1){
@@ -349,12 +327,8 @@ int look_type_part(TreeNode * typePart){
 	TreeNode* typeDecl;
   symbolNode node ;
 	while(typeDefinition != NULL){
-    //fprintf(stderr,"looktypepart0.3\n");
 		name = typeDefinition -> child;
-    //fprintf(stderr,"looktypepart0.5\n");
 		typeDecl = name -> sibling;
-    //fprintf(stderr,"looktypepart1\n");
-		//printf("hehe\n");
 		int type = look_type_decl(typeDecl);
 		node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type);
 		int succeed = insert_symbol(node);
@@ -362,37 +336,15 @@ int look_type_part(TreeNode * typePart){
       fprintf(ERR,REDEFINE,node->lines->line,node->name);
 			return -1;
     }
-    /*if(strcmp(getNodeKindString(typeDecl->nodekind),"SIMPLE_TYPE_DECL") == 0){
-			//printf("haha\n");
-		  node = new_symbol_node(name -> tokenString, name->lineno, Type, 0, type_check(typeDecl->child->tokenString));//??????????
-		  int succeed = insert_symbol(node);
-      if(succeed == -1){
-        fprintf(ERR,REDEFINE,node->lines->line,node->name);
-				return -1;
-      }
-			typeDecl -> child -> type = type_check(typeDecl -> child->tokenString);
-			typeDecl ->type = typeDecl -> child -> type;
-    }
-    else if(strcmp(getNodeKindString(typeDecl->child->nodekind),"ARRAY_TYPE_DECL") == 0){
-        TreeNode* start, *end, *eleType;
-        start = typeDecl -> child -> child;
-        end  = start -> sibling;
-        eleType = typeDecl ->child -> sibling -> child;
-        //node = new_symbol_node(name->tokenString, name->lineno, Type, )
-    }
-    else if(strcmp(getNodeKindString(typeDecl->child->nodekind),"RECORD_TYPE_DECL") == 0){
 
-    }*/
 		name -> type = Type;
     typeDefinition = typeDefinition -> sibling;
 	}
-  //fprintf(stderr,"%s  %d, %d\n",node->name,Type, node->type_const_arrayType);
 	return 0;
 }
 
 int look_simple_type_decl(TreeNode* decl){
 	TreeNode* subDecl = decl -> child;
-	//printf("%s\n",getNodeKindString(subDecl->nodekind));
 	while(subDecl != NULL){
 		if(strcmp(getNodeKindString(subDecl->nodekind),"SYS_TYPE") == 0){//SYS_TYPE
 			//printf("integer\n");
@@ -448,11 +400,9 @@ int look_record_type_decl(TreeNode* decl){
 
 int look_type_decl(TreeNode* decl){
 	if(strcmp(getNodeKindString(decl->nodekind),"SIMPLE_TYPE_DECL") == 0){
-		//printf("SIMPLE_TYPE_DECL\n");
 		return look_simple_type_decl(decl);
 	}
 	else if(strcmp(getNodeKindString(decl->nodekind),"ARRAY_TYPE_DECL") == 0){
-		//printf("ARRAY_TYPE_DECL\n");
 		return look_array_type_decl(decl);
 	}
 	else if(strcmp(getNodeKindString(decl->nodekind),"RECORD_TYPE_DECL") == 0){
@@ -470,9 +420,7 @@ int look_var_part(TreeNode * varPart){
     //fprintf(stderr,"haha\n");
     TreeNode* typeDecl = nameList -> sibling;
 		TreeNode * typeNode = nameList -> sibling -> child;
-    //printf("%s\n",getNodeKindString(typeDecl->nodekind));
 		TreeNode * idList = nameList -> child;//就是ID
-    //printf("%s\n",getNodeKindString(typeDecl->nodekind));
     if(strcmp(getNodeKindString(typeDecl->nodekind),"ARRAY_TYPE_DECL") == 0){
       isArray = 1;
 			isRecord = 0;
@@ -496,9 +444,7 @@ int look_var_part(TreeNode * varPart){
       if(typeName == Type){
         symbolNode thisNode = st_lookup(now, typeNode -> tokenString);
         if(thisNode != NULL){
-          //fprintf(stderr,"this Node %s,%d,%d\n",thisNode->name,thisNode->type,thisNode->type_const_arrayType);
           typeName = thisNode -> type_const_arrayType;
-          //fprintf("%s\n",typeNode->tokenString);
           free(typeNode -> tokenString);
           typeNode->tokenString = (char*)malloc(sizeof(char)* (strlen (type_string(thisNode -> type_const_arrayType)) + 1));
           strcpy(typeNode->tokenString,type_string(thisNode->type_const_arrayType));
@@ -629,8 +575,6 @@ int look_params(TreeNode* parameters){//函数的参数分析
     type = nameList -> sibling -> child;
     TreeNode* id = nameList ->child;
     while(id != NULL){
-      //fprintf(stderr,"look params1\n");
-     // fprintf(stderr,"%s %d",type->tokenString)
       id->type = type_check(type->tokenString);
       type -> type = id->type;
       //fprintf(stderr,"look params2\n");
@@ -685,8 +629,6 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   add_loc_by_type(type_check(return_type->tokenString),1, BUCKET_SIZE);//把memloc加一个值，给返回值腾空间
   int pos = hash(name);
   (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc-4;
-  //fprintf(stderr,"look_func_decl2\n");
-  //succeed = insert_symbol(return_value);//
   if(succeed == -1){
       //fprintf(stderr,"aa");
       fprintf(ERR,REDEFINE,return_value->lines->line,return_value->name);
@@ -709,9 +651,6 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   TreeNode* id = procedure_head -> child -> sibling;
   //fprintf(stderr,"look_proc_decl4\n");
   TreeNode* parameters = id->sibling;
-  //fprintf(stderr,"look_proc_decl5\n");
-  //TreeNode* return_type = parameters->sibling->child;
-  //fprintf(stderr,"look_proc_decl6\n");
   char * name;
 	int count=0;
   name = (char*)malloc(sizeof(char)*(strlen(id->tokenString)+1));
@@ -820,8 +759,6 @@ int look_proc_stmt(TreeNode* subStmt){
 
 	}
 	else if(strcmp(func_name->tokenString,"read") == 0){//系统函数
-		//printf("haha\n");
-		//printf("now = %d\n",now);
 		symbolNode id = st_lookup(now, func_params->tokenString);
 		if(id == NULL){
 			fprintf(ERR,NO_SUCH_SYMBOL,func_params->lineno, func_params->tokenString);
@@ -958,8 +895,6 @@ int look_for_stmt(TreeNode* subStmt){
   TreeNode* expression2 = expression1 -> sibling -> sibling;
   TreeNode* stmt = expression2 -> sibling;
   symbolNode loopVar = st_lookup(now, id->tokenString);
-  //printf("%s\n",id->tokenString);
-  //printf("loopVar = %d\n",loopVar);
   int varType = loopVar -> type;
   id->type = loopVar -> type;
   //printf("c\n");
@@ -1041,10 +976,8 @@ int insert_symbol(symbolNode node){
 			//fprintf(stderr, REDEFINE, name, -2);//变量重复定义，%s变量名,%d行号
 			return -1;
 		}
-    //fprintf(stderr,"insert_symbol2\n");
 		which = which -> nextNode;
 	}
-	//which = (symbolNode)malloc(sizeof(struct symbolNodeCon));
   if(beforeWhich == NULL)
     (*(now + hashValue)) = node;
   else
@@ -1110,7 +1043,6 @@ int semantic_routine_head(TreeNode* routineHead){
   return 0;
 }
 int semantic_routine_stmt_list(TreeNode* routineStmt){
-	//printf("today1\n");
 	return look_stmt_list_part(routineStmt);
 }
 
@@ -1118,7 +1050,6 @@ int semantic_routine(TreeNode* routine){
   TreeNode* routineHead = routine -> child;
 	TreeNode* routineStmt = routineHead -> sibling;
 	semantic_routine_head(routineHead);
-  //printf("dd\n");
 	semantic_routine_stmt_list(routineStmt);
 	return 0;
 }
