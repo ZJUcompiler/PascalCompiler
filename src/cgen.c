@@ -886,7 +886,7 @@ void codeGen( TreeNode *syntaxTree)
     TreeNode *routine_part = syntaxTree->child->sibling->child->child->sibling->sibling->sibling->sibling;
     assert(routine_part->nodekind == N_ROUTINE_PART);
 
-    fprintf(IR, "_$MAIN$_: \n");
+    fprintf(IR, "_$MAIN$_\n");
     genStmtList(syntaxTree->child->sibling->child->sibling);
 
     TreeNode *p = routine_part->child;

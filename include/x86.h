@@ -1,5 +1,7 @@
 #pragma once
 
+#include "symbol.h"
+
 FILE *CODE;
 void genX86Asm(FILE *IR);
 
@@ -31,7 +33,7 @@ static const int str = 0x03;
 
 extern symbolNode buckets[];
 extern int layerNum;
-static symbolNode *currSymtab = buckets;
+symbolNode *currSymtab;
 
 // op
 static inline int isNum(const char *op) {

@@ -1,4 +1,5 @@
 #include <zconf.h>
+#include <x86.h>
 #include "globals.h"
 #include "util.h"
 #include "symbol.h"
@@ -54,7 +55,6 @@ void analysisArg(int argc, char* argv[]){
 			strcpy(fileName, argv[i]);
 		}
 	}
-	printf("%s\n", fileName);
 	if (argc < 2 || access(fileName, F_OK) < 0) {
 		fprintf(stderr, "No pascal source file specified!\n");
 		exit(1);
@@ -68,7 +68,6 @@ void analysisArg(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
-	char buf[255];
 	char IR_name[64], CODE_name[64];
 	extern FILE *CODE;
 	analysisArg(argc, argv);
@@ -77,7 +76,7 @@ int main(int argc, char* argv[]){
 	if(doSemantic){
 		semantic_analysis(root);
 	}
-	printf("now == == %d\n",buckets);
+//	printf("now == == %d\n",buckets);
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
 	print_symbol_table(  buckets  );
 	if(printSymbol){
