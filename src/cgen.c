@@ -487,7 +487,7 @@ static void genStmt(TreeNode *tree) {
                     }
                     else if (id->type == String)
                     {
-                        assert(tp == I32);
+                        assert(tp == STR);
                         fprintf(IR, "asn_str i32 %s str %s\n", exprId, id->tokenString);
                         // assert(0);
                     }
