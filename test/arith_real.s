@@ -9,92 +9,149 @@
 main:
 	pushl	%ebp
 	movl	%esp, %ebp
-	subl	$17, %esp
+	subl	$21, %esp
 	movl	$2, %eax
 	movl	%ebp, %edx
 	movl	%eax, -4(%edx)
-	movl	$2, %eax
+	movl	$5, %eax
 	movl	%ebp, %edx
 	movl	%eax, -8(%edx)
-	movl	%ebp, %edx
-	movl	-4(%edx), %eax
-	movl	%ebp, %edx
-	movl	-8(%edx), %ebx
-	cmpl	%ebx, %eax
-	setl	%al
-	movzbl	%al, %edi
-	movl	$0, %eax
-	cmpl	%edi, %eax
-	sete	%al
-	movzbl	%al, %edi
-	movl	%ebp, %edx
-	movl	%edi, %eax
-	movb	%al, -9(%edx)
-	movl	%ebp, %edx
-	movb	-9(%edx), %al
-	movzbl	%al, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_writeln_int
-	movl	%ebp, %edx
-	movl	-4(%edx), %eax
-	movl	%ebp, %edx
-	movl	-8(%edx), %ebx
-	cmpl	%ebx, %eax
-	setl	%al
-	movzbl	%al, %edi
-	movl	%ebp, %edx
-	movl	%edi, %eax
-	movb	%al, -9(%edx)
-	movl	%ebp, %edx
-	movb	-9(%edx), %al
-	movzbl	%al, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_writeln_int
-	movl	%ebp, %edx
-	movl	-4(%edx), %eax
-	movl	%ebp, %edx
-	movl	-8(%edx), %ebx
-	cmpl	%ebx, %eax
-	sete	%al
-	movzbl	%al, %edi
-	movl	$1, %eax
-	xorl	%eax, %edi
-	movl	%ebp, %edx
-	movl	%edi, %eax
-	movb	%al, -9(%edx)
-	movl	%ebp, %edx
-	movb	-9(%edx), %al
-	movzbl	%al, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_writeln_int
-	movl	%ebp, %edx
-	movl	-8(%edx), %eax
-	movl	%ebp, %edx
-	movl	-4(%edx), %ebx
-	cmpl	%ebx, %eax
-	setl	%al
-	movzbl	%al, %edi
-	movl	$0, %eax
-	cmpl	%edi, %eax
-	sete	%al
-	movzbl	%al, %edi
-	movl	%ebp, %edx
-	movl	%edi, %eax
-	movb	%al, -9(%edx)
-	movl	%ebp, %edx
-	movb	-9(%edx), %al
-	movzbl	%al, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_writeln_int
 	movl	$1080033280, %eax
 	movl	%ebp, %edx
 	movl	%eax, -13(%edx)
+	movl	$1082759578, %eax
 	movl	%ebp, %edx
-	movl	-13(%edx), %eax
+	movl	%eax, -17(%edx)
+	movl	$1082759578, %eax
+	movl	%ebp, %edx
+	movl	%eax, -21(%edx)
+	movl	%ebp, %edx
+	movl	-21(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-17(%edx), %eax
+	pushl	%eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	seta	%al
+	movzbl	%al, %edi
+	addl	$8, %esp
+	movl	$0, %eax
+	cmpl	%edi, %eax
+	sete	%al
+	movzbl	%al, %edi
+	movl	%ebp, %edx
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
+	movl	%ebp, %edx
+	movb	-9(%edx), %al
+	movzbl	%al, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	movl	%ebp, %edx
+	movl	-21(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-17(%edx), %eax
+	pushl	%eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	seta	%al
+	movzbl	%al, %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
+	movl	%ebp, %edx
+	movb	-9(%edx), %al
+	movzbl	%al, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	movl	%ebp, %edx
+	movl	-17(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-21(%edx), %eax
+	pushl	%eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	seta	%al
+	movzbl	%al, %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
+	movl	%ebp, %edx
+	movb	-9(%edx), %al
+	movzbl	%al, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	movl	%ebp, %edx
+	movl	-21(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-17(%edx), %eax
+	pushl	%eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	setnp	%dl
+	movl	$0, %eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	cmove	%edx, %eax
+	movzbl	%al, %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
+	movl	%ebp, %edx
+	movb	-9(%edx), %al
+	movzbl	%al, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	movl	%ebp, %edx
+	movl	-17(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-21(%edx), %eax
+	pushl	%eax
+	flds	0(%esp)
+	flds	4(%esp)
+	fxch	%st(1)
+	fucomip	%st(1), %st
+	fstp	%st(0)
+	seta	%al
+	movzbl	%al, %edi
+	addl	$8, %esp
+	movl	$0, %eax
+	cmpl	%edi, %eax
+	sete	%al
+	movzbl	%al, %edi
+	movl	%ebp, %edx
+	movl	%edi, %eax
+	movb	%al, -9(%edx)
+	movl	%ebp, %edx
+	movb	-9(%edx), %al
+	movzbl	%al, %eax
 	pushl	%eax
 	subl	$4, %esp
 	call	_writeln_int

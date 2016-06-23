@@ -1,3 +1,4 @@
+#include <zconf.h>
 #include "globals.h"
 #include "util.h"
 #include "symbol.h"
@@ -12,6 +13,8 @@ int traceflag = 0;
 int printflag = 0;
 int doSemantic = 1;
 int printSymbol = 0;
+char fileName[64];
+char filePreName[64];
 
 
 void printTree(TreeNode* t, int depth){
@@ -39,18 +42,37 @@ void printTree(TreeNode* t, int depth){
 void analysisArg(int argc, char* argv[]){
 	int i;
 	for (i=0; i<argc; i++) {
-		if (strcmp(argv[i], "-d") == 0) printflag = 1;
-		if (strcmp(argv[i], "-t") == 0) traceflag = 1;
-		if (strcmp(argv[i], "-s") == 0) doSemantic = 0;
-		if (strcmp(argv[i], "-y") == 0) printSymbol = 1;
+		if (strcmp(argv[i], "-d") == 0)
+			printflag = 1;
+		else if (strcmp(argv[i], "-t") == 0)
+			traceflag = 1;
+		else if (strcmp(argv[i], "-s") == 0)
+			doSemantic = 0;
+		else if (strcmp(argv[i], "-y") == 0)
+			printSymbol = 1;
+		else {
+			strcpy(fileName, argv[i]);
+		}
 	}
+	printf("%s\n", fileName);
+	if (argc < 2 || access(fileName, F_OK) < 0) {
+		fprintf(stderr, "No pascal source file specified!\n");
+		exit(1);
+	}
+	i = 0;
+	while (fileName[i] != '.' && fileName[i] != '\0') {
+		filePreName[i] = fileName[i];
+		i++;
+	}
+	filePreName[i] = '\0';
 }
 
 int main(int argc, char* argv[]){
 	char buf[255];
+	char IR_name[64], CODE_name[64];
 	extern FILE *CODE;
 	analysisArg(argc, argv);
-	freopen("/home/hac/Documents/Git/PascalCompiler/test/arith.pas", "r", stdin);
+	freopen(fileName, "r", stdin);
 	yyparse();
 	if(doSemantic){
 		semantic_analysis(root);
@@ -67,11 +89,16 @@ int main(int argc, char* argv[]){
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 
 	// gen Immediate
-	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.tac", "w");
+
+	strcpy(IR_name, filePreName);
+	strcat(IR_name, ".tac");
+	strcpy(CODE_name, filePreName);
+	strcat(CODE_name, ".s");
+	IR = fopen(IR_name, "w");
 	codeGen(root);
 	fclose(IR);
-	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.tac", "r");
-	CODE = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.s", "w");
+	IR = fopen(IR_name, "r");
+	CODE = fopen(CODE_name, "w");
 	genX86Asm(IR);
 	fclose(CODE);
 	return 0;
