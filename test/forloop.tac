@@ -1,5 +1,6 @@
 _$MAIN$_: 
-asn i32 3 i32 r
+arg i32 &r
+call read
 asn i32 1 i32 i
 _$JMP$_L0
 lt i32 10 i32 i i8 $t0

@@ -17,7 +17,7 @@ set(SOURCE_FILES
     src/constTab.c
     src/lex.yy.c
   #  src/main.c
-    src/main_x86.c
+    src/main_clion.c
     src/optimize.c
     src/symbol.c
     src/util.c

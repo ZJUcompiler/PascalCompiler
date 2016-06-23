@@ -183,8 +183,9 @@ static int getValue(char *op, int op_type, int regID) {
     else if (isReg(op))
         return findIDbyIRName(op);
     else if (isAddr(op)) {
-        symbolNode symnode = loopBack(op);
+        symbolNode symnode = loopBack(op+1);
         fprintf(CODE, "\tleal\t%d(%%edx), %%%s\n", 0 - symnode->memloc, reg);
+        return regID;
     }
     else if (isLabel(op)) {
         fprintf(CODE, "\tmovl\t%s, %%%s\n", op, reg);
@@ -885,6 +886,82 @@ static void genInst(char *line, FILE *IR) {
         tok = strtok(NULL, " \r\n");
         fprintf(CODE, "\tcmpl\t$0, %%%s\n", reg);
         fprintf(CODE, "\tje\t%s\n", tok);
+    }
+    else if (isPUSH(tok)) {
+        tok = strtok(NULL, " \r\n");
+        tok = strtok(NULL, " \r\n");
+        regID = findIDbyIRName(tok);
+        findRegbyID(regID, reg);
+        fprintf(CODE, "\tpushl\t%%%s\n", reg);
+    }
+    else if (isPOP(tok)) {
+        tok = strtok(NULL, " \r\n");
+        tok = strtok(NULL, " \r\n");
+        regID = findIDbyIRName(tok);
+        findRegbyID(regID, reg);
+        fprintf(CODE, "\tpopl\t%%%s\n", reg);
+    }
+    else if (isLOAD(tok)) {
+        int op_type, IR_reg;
+        tok = strtok(NULL, " \r\n");
+        strcpy(op1, tok);
+        tok = strtok(NULL, " \r\n");
+        if (strcmp(tok, "i32") == 0)
+            op_type = i32;
+        else if (strcmp(tok, "f32") == 0)
+            op_type = f32;
+        else if (strcmp(tok, "i8") == 0)
+            op_type = i8;
+
+        if (isReg(op1)) {
+            regID = findIDbyIRName(op1);
+            findRegbyID(regID, reg);
+            tok = strtok(NULL, " \r\n");
+            IR_reg = findIDbyIRName(tok);
+            if (regID == IR_reg) {
+                if (op_type == i8) {
+                    fprintf(CODE, "\tmovb\t(%%%s), %%al\n", reg);
+                    fprintf(CODE, "\tmovzbl\t%%al, %%%s\n", reg);
+                }
+                else
+                    fprintf(CODE, "\tmovl\t(%%%s), %%%s\n", reg, reg);
+            }
+            else {
+                findRegbyID(IR_reg, reg2);
+                if (op_type == i8) {
+                    fprintf(CODE, "\tmovb\t(%%%s), %%al\n", reg);
+                    fprintf(CODE, "\tmovzbl\t%%al, %%%s\n", reg2);
+                }
+                else
+                    fprintf(CODE, "\tmovl\t(%%%s), %%%s\n", reg, reg2);
+            }
+        }
+        else if (isVar(op1)) {
+           // may not occur
+        }
+    }
+    else if (isSTORE(tok)) {
+        int op_type, IR_reg;
+        tok = strtok(NULL, " \r\n");
+        if (strcmp(tok, "i32") == 0)
+            op_type = i32;
+        else if (strcmp(tok, "f32") == 0)
+            op_type = f32;
+        else if (strcmp(tok, "i8") == 0)
+            op_type = i8;
+
+        tok = strtok(NULL, " \r\n");
+        strcpy(op1, tok);
+
+        tok = strtok(NULL, " \r\n");
+        IR_reg = findIDbyIRName(tok);
+        findRegbyID(IR_reg, reg);
+
+        regID = getValue(op1, op_type, EAX);
+        if (regID == AL)
+            fprintf(CODE, "\tmovb\t%%al, (%%%s)\n", reg);
+        else
+            fprintf(CODE, "\tmovl\t%%eax, (%%%s)\n", reg);
     }
     else if (isARG(tok)) {
         char argList[256][32];

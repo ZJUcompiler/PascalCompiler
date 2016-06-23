@@ -10,9 +10,12 @@ main:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$8, %esp
-	movl	$3, %eax
 	movl	%ebp, %edx
-	movl	%eax, -8(%edx)
+	leal	-8(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_read_int
+	addl	$8, %esp
 	movl	$1, %eax
 	movl	%ebp, %edx
 	movl	%eax, -4(%edx)
@@ -48,6 +51,7 @@ _$JMP$_L1:
 	pushl	%eax
 	subl	$4, %esp
 	call	_writeln_int
+	addl	$8, %esp
 	leave
 	ret
 .LFE0:
