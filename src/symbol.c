@@ -89,18 +89,19 @@ int get_sonex_type(TreeNode* exp){
     argsList = id ->sibling;
 		TreeNode* expression = argsList->child;
 		while(expression != NULL){
-		  get_expression_type(expression);
+		  expression -> type = get_expression_type(expression);
+			printf("expression : %d \n",expression->type);
 		  expression = expression -> sibling;
 		}
 		//printf("id : %s\n",id->tokenString);
 		//printf("daad\n");
 		if(strcmp(getNodeKindString(id -> nodekind),"SYS_FUNCT" ) == 0){
 			expression = argsList->child;
-			printf("id : %s\n",id->tokenString);
+			//printf("id : %s\n",id->tokenString);
 			expression->type = get_expression_type(expression);
-			printf("exp : %s\n",getNodeKindString(argsList -> nodekind));
-			printf("exp : %s\n",getNodeKindString(argsList -> child -> nodekind));
-			printf("idd : %s %d\n","abs",strcmp(id -> tokenString,"abs" ) == 0);
+			//printf("exp : %s\n",getNodeKindString(argsList -> nodekind));
+			//printf("exp : %s\n",getNodeKindString(argsList -> child -> nodekind));
+			//printf("idd : %s %d\n","abs",strcmp(id -> tokenString,"abs" ) == 0);
 			//printf("ddsd\n");
 			if(strcmp(id -> tokenString,"abs" ) == 0){
 				//printf("id : %d %d\n",id->type,expression->type);
@@ -135,7 +136,13 @@ int get_sonex_type(TreeNode* exp){
 			}
 			return exp->type = id->type;
 		}
-		else{
+		else if(strcmp(id->tokenString,"-") == 0){//负号
+			if(argsList == NULL){
+				printf(ERR,TOO_LITTLE_ARGS,id->lineno);
+			}
+			return exp->type = get_sonex_type(argsList);//factor 又挂了factor
+		}
+		else{//不是系统函数
 		  symbolNode func = st_lookup(now,id->tokenString);
 			if(func == NULL){//找不到这个函数
 				printf(ERR,  NO_SUCH_SYMBOL, id->lineno, id->tokenString);
@@ -718,9 +725,9 @@ int look_stmt(TreeNode* stmt){
       look_if_stmt(subStmt);
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"ASSIGN_STMT") == 0){//有了
-			printf("dad\n");
+			//printf("dad\n");
       look_assign_stmt(subStmt);
-      printf("dd\n");
+      //printf("dd\n");
     }
     else if(strcmp(getNodeKindString(subStmt->nodekind),"WHILE_STMT") == 0){//有了
       look_while_stmt(subStmt);
