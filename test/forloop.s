@@ -9,8 +9,16 @@
 main:
 	pushl	%ebp
 	movl	%esp, %ebp
-	subl	$8, %esp
+	subl	$264, %esp
 	leal	_$CONST$_L0, %eax
+	movl	%eax, %edi
+	movl	%ebp, %edx
+	movl	-264(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	leal	_$CONST$_L1, %eax
 	movl	%eax, %edi
 	pushl	%edi
 	subl	$4, %esp
@@ -66,6 +74,9 @@ _$JMP$_L1:
 
 .section	.rodata
 _$CONST$_L0:
+	.string "\015Hello, world!\000"
+
+_$CONST$_L1:
 	.string "\018please input r: \000"
 
 .ident	"PasC v1.0"
