@@ -4,19 +4,23 @@ var a:integer;
     c:boolean;
     d:real;
     e:real;
+    f:real;
 
 begin
     a := 2;
-    b := 2;
-    c := a >= b;
+    b := 5;
+    d := 3.5;
+    e := 4.3;
+    f := 4.3;
+    c := f >= e;
     writeln(c);
-    c := a < b;
+    c := f < e;
     writeln(c);
-    c := a <> b;
+    c := f > e;
     writeln(c);
-    c := a <= b;
+    c := f = e;
+    writeln(c);
+    c := f <= e;
     writeln(c);
 
-    d := 3.5;
-    writeln(d);
 end.

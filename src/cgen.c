@@ -47,15 +47,6 @@ FILE *IR;
 static void genStmtList(TreeNode *tree);
 static void genFunc(TreeNode *tree, char *fatherFuncLabel);
 
-//static tacVal genTacVal(char *id, TypeVar type)
-//{
-//    tacVal t;
-//    assert(strlen(id) < 20);
-//    strcpy(t.id, id);
-//    t.type = type;
-//    return t;
-//}
-
 static inline char *getValTypeStr(TypeVar t)
 {
     switch(t)
@@ -141,10 +132,10 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
 
         id1 = getNaiveK(p1, &tp1);
         id2 = getNaiveK(p2, &tp2);
-
+        int flag=0;
         if(!id1) {genExp(p1, &tp1, t0); id1 = t0;}
-        if(!id2) {genExp(p2, &tp2, t1); id2 = t1;}
-
+        if(!id2) {fprintf(IR, "push i32 $t0\n" );genExp(p2, &tp2, t1); id2 = t1;flag=1;}
+        if (flag) {fprintf(IR, "pop i32 $t0\n");}
 
         tacVal op1 = newTac(id1, tp1), op2 = newTac(id2, tp2), op3 = newTac(varId, tp1);
 
@@ -156,7 +147,7 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             {
                 case N_EXP_GE:
                     emitCode("lt", op1, op2, tmp0);
-                    emitCode("eq", tmp0, btrue, op3);
+                    emitCode("eq", tmp0, bfalse, op3);
                     break;
                 case N_EXP_GT:
                     emitCode("lt", op2, op1, op3);

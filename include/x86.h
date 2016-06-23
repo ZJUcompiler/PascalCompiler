@@ -43,8 +43,11 @@ static inline int isReg(const char *op) {
 static inline int isLabel(const char *op) {
     return op[0] == '_' && op[1] == '$';
 }
+static inline int isAddr(const char *op) {
+    return op[0] == '&';
+}
 static inline int isVar(const char *op) {
-    return !(isNum(op) || isReg(op) || isLabel(op));
+    return !(isNum(op) || isReg(op) || isLabel(op) || isAddr(op));
 }
 
 // comm
@@ -93,6 +96,12 @@ static inline int isFDIV(const char *comm) {
 static inline int isASN(const char *comm) {
     return strcmp(comm, "asn") == 0;
 }
+static inline int isPUSH(const char *comm) {
+    return strcmp(comm, "push") == 0;
+}
+static inline int isPOP(const char *comm) {
+    return strcmp(comm, "pop") == 0;
+}
 static inline int isASN_STR(const char *comm) {
     return strcmp(comm, "asn_str") == 0;
 }
@@ -102,8 +111,8 @@ static inline int isLOAD(const char *comm) {
 static inline int isLEA(const char *comm) {
     return strcmp(comm, "lea") == 0;
 }
-static inline int isSTOR(const char *comm) {
-    return strcmp(comm, "stor") == 0;
+static inline int isSTORE(const char *comm) {
+    return strcmp(comm, "store") == 0;
 }
 static inline int isCALL(const char *comm) {
     return strcmp(comm, "call") == 0;

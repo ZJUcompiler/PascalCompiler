@@ -13,7 +13,7 @@ int traceflag = 0;
 int printflag = 0;
 int doSemantic = 1;
 int printSymbol = 0;
-char fileName[64];
+char fileName[64] = "/home/hac/Documents/Git/PascalCompiler/test/forloop.pas";
 char filePreName[64];
 
 
@@ -50,15 +50,15 @@ void analysisArg(int argc, char* argv[]){
 			doSemantic = 0;
 		else if (strcmp(argv[i], "-y") == 0)
 			printSymbol = 1;
-		else {
-			strcpy(fileName, argv[i]);
-		}
+//		else {
+//			strcpy(fileName, argv[i]);
+//		}
 	}
 	printf("%s\n", fileName);
-	if (argc < 2 || access(fileName, F_OK) < 0) {
-		fprintf(stderr, "No pascal source file specified!\n");
-		exit(1);
-	}
+//	if (argc < 2 || access(fileName, F_OK) < 0) {
+//		fprintf(stderr, "No pascal source file specified!\n");
+//		exit(1);
+//	}
 	i = 0;
 	while (fileName[i] != '.' && fileName[i] != '\0') {
 		filePreName[i] = fileName[i];

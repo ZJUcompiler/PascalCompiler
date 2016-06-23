@@ -1,0 +1,32 @@
+#! /bin/sh
+
+comm="./PasC"
+while getopts :dstyf: opt; do
+    case "$opt" in
+        d)  comm=$comm+" -d";;
+        s)  comm=$comm+" -s";;
+        t)  comm=$comm+" -t";;
+        y)  comm=$comm+" -y";;
+        f)  sourceFile=$OPTARG;
+            echo $sourceFile
+            if [ -e $sourceFile ]; then
+                ok=1
+            else
+                ok=0
+            fi;;
+    esac
+done
+
+# compile
+if [ "$ok" = "1" ]; then
+    comm=$comm" "$sourceFile
+    echo $comm
+    eval "$comm"
+else
+    echo "No pascal source file specified!"
+fi
+
+# link
+filePreName=$(echo $sourceFile | cut -f1 -d.)
+linkComm="gcc src/x86rtllinux.s "$filePreName".s -m32 -o "$filePreName
+eval "$linkComm"
