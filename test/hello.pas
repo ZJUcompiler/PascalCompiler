@@ -35,7 +35,6 @@ begin
    sum := sum + number;
    number := number - 2;
 	end;
-	
 	for bbbb := 1 to 10 do begin
 		a := a+1;
 		if bbbb>0 then}

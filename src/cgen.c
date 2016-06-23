@@ -19,6 +19,7 @@ typedef enum{
     I32,
     I8,
     F32
+    // STR
 } TypeVar;
 
 typedef struct {
@@ -62,6 +63,7 @@ static inline char *getValTypeStr(TypeVar t)
         case I32: return "i32";
         case I8: return "i8";
         case F32: return "f32";
+        // case STR: return "str";
     }
     return NULL;
 }
@@ -341,10 +343,11 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             if( !(argId = getNaiveK(p_arg->child, &tp) ) ) 
                 {genExp(p_arg->child, &tp, t0); argId = t0;}
             tacVal arg = newTac(argId, tp);
-            fprintf(IR, "arg %s\n", arg.id);
+            fprintf(IR, "arg %s %s\n", getValTypeStr(tp), arg.id);
             p_arg = p_arg->sibling;
         }
-        fprintf(IR, "call %s\n", p1->tokenString);
+        fprintf(IR, "call %s %s %s\n", p1->tokenString, 
+                getValTypeStr(*varType), varId);
     }
     // not factor
     else if ( isNotFacK(tree) )
@@ -493,8 +496,9 @@ static void genStmt(TreeNode *tree) {
                     }
                     else if (id->type == String)
                     {
-                        // TODO:
-                        assert(0);
+                        assert(tp == I32);
+                        fprintf(IR, "asn_str i32 %s str %s\n", exprId, id->tokenString);
+                        // assert(0);
                     }
                     else if (id->type == Record)
                     {
@@ -544,7 +548,10 @@ static void genStmt(TreeNode *tree) {
                     else if (tree->type == Record)
                         assert(0); // TODO
                     else if (tree->type == String)
+                    {                        
                         assert(0);
+                        // fprintf(IR, "store i32 %s str %s\n", exprId, id->tokenString);
+                    }
                     else
                         assert(0);
 
@@ -693,7 +700,7 @@ static void genStmt(TreeNode *tree) {
             char *exprId;
             if ( !(exprId = getNaiveK(exp, &exprTp)))
                 { genExp(exp, &exprTp, t0); exprId = t0;}
-            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L1);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
             break;
         }
         case N_WHILE_STMT: {
@@ -702,12 +709,12 @@ static void genStmt(TreeNode *tree) {
             TreeNode *stmt = tree->child->sibling;
             TypeVar exprTp;
             char *exprId;
+            int L1 = labelNum++;
+            fprintf(IR, "_$JMP$_L%d\n", L1);
             if ( !(exprId = getNaiveK(exp, &exprTp)))
                 { genExp(exp, &exprTp, t0); exprId = t0;}
-            int L1 = labelNum++;
             int L2 = labelNum++;
-            fprintf(IR, "_$JMP$_L%d\n", L1);
-            fprintf(IR, "if_f i8 %s _$JMP$_%d\n", exprId, L2);
+            fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L2);
             genStmtList(stmt->child);
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d\n", L2);
@@ -734,13 +741,21 @@ static void genStmt(TreeNode *tree) {
             if (direct->nodekind == N_TO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", exprId2, id->tokenString, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // bt -> 1 == 0 = 0 -> jump
+                // fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             else if (direct->nodekind == N_DOWNTO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", id->tokenString, exprId2, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // lt -> 1 == 0 = 0 -> jump
+                // fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L2);
             genStmt(stmt->child);
+            if (direct->nodekind == N_TO) {
+                fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+            }
+            else if (direct->nodekind == N_DOWNTO) {
+                fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+            }
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d\n", L2);
             break;

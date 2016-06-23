@@ -1,7 +1,6 @@
 program fib;
 
 var r:integer;
-	
 	function fib(n:integer):integer;
 	begin
 		if (n=1) or (n=0) then
