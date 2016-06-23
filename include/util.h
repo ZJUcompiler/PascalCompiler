@@ -52,7 +52,7 @@ static inline int isCallK( TreeNode *tree )
 {
     return (tree->nChild == 2) &&
             (tree->nodekind == N_FACTOR) &&
-            (tree->child->nodekind == N_ID) &&
+            (tree->child->nodekind == N_ID|| tree->child->nodekind ==N_SYS_FUNCT) &&
             (tree->child->sibling->nodekind == N_ARGS_LIST);
 }
 

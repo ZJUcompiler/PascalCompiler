@@ -326,7 +326,7 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
             *varType = I32;
         else if(tree->type == Real)
             *varType = F32;
-        else if(tree->type == Boolean)
+        else if(tree->type == Boolean ||tree->type == Char)
             *varType = I8;
         else if(tree->type == Record)
             *varType = I32;
@@ -340,13 +340,13 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         {
             TypeVar tp;
             char *argId;
-            if( !(argId = getNaiveK(p_arg->child, &tp) ) ) 
+            if( !(argId = getNaiveK(p_arg->child, &tp) ) )
                 {genExp(p_arg->child, &tp, t0); argId = t0;}
             tacVal arg = newTac(argId, tp);
             fprintf(IR, "arg %s %s\n", getValTypeStr(tp), arg.id);
             p_arg = p_arg->sibling;
         }
-        fprintf(IR, "call %s %s %s\n", p1->tokenString, 
+        fprintf(IR, "call %s %s %s\n", p1->tokenString,
                 getValTypeStr(*varType), varId);
     }
     // not factor
@@ -465,7 +465,7 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *exp = id->sibling->child;
                     TypeVar tp;
                     char *exprId;
-                    if (!(exprId = getNaiveK(exp, &tp))) 
+                    if (!(exprId = getNaiveK(exp, &tp)))
                         { genExp(exp, &tp, t0); exprId = t0;}
                     if (id->type == Integer)
                     {
@@ -518,12 +518,12 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *exp_2 = id->sibling->sibling->child;
                     TypeVar offsTp, exprTp;
                     char *offsId, *exprId;
-                    if (!(offsId = getNaiveK(exp_1, &offsTp))) 
+                    if (!(offsId = getNaiveK(exp_1, &offsTp)))
                         { genExp(exp_1, &offsTp, t0); offsId = t0;}
-                    if (!(exprId = getNaiveK(exp_2, &exprTp))) 
+                    if (!(exprId = getNaiveK(exp_2, &exprTp)))
                         { genExp(exp_2, &exprTp, t1); exprId = t1;}
                     fprintf(IR, "add i32 %s i32 %s i32 %s\n", id->tokenString, offsId, t0);
-                    if (tree->type == Integer) 
+                    if (tree->type == Integer)
                     {
                         // fprintf(IR, "asn i32 %s i32 $t1\n", exprId);
                         fprintf(IR, "store i32 %s %s\n", exprId, t0);
@@ -548,7 +548,7 @@ static void genStmt(TreeNode *tree) {
                     else if (tree->type == Record)
                         assert(0); // TODO
                     else if (tree->type == String)
-                    {                        
+                    {
                         assert(0);
                         // fprintf(IR, "store i32 %s str %s\n", exprId, id->tokenString);
                     }
@@ -567,7 +567,7 @@ static void genStmt(TreeNode *tree) {
                     TreeNode *id_2 = id_1->sibling;
                     TreeNode *exp = id_2->sibling->child;
                     char *exprId;
-                    if (!(exprId = getNaiveK(exp, &exprTp))) 
+                    if (!(exprId = getNaiveK(exp, &exprTp)))
                         { genExp(exp, &exprTp, t1); exprId = t1;}
                     symbolNode node = st_lookup(cur_domain, id_1->tokenString);
                     symbolNode field = st_lookup(node->nextBucket, id_2->tokenString);
@@ -655,6 +655,12 @@ static void genStmt(TreeNode *tree) {
                 case 5: {
                     // TODO
                     // NOTE: read record?
+                    TreeNode *id = tree->child;
+                    TreeNode *argId = id->sibling;
+                    if (argId->type == String)
+                        assert(0);
+                    else
+                        fprintf(IR, "arg i32 &%s\n", argId->tokenString);
                     fprintf(IR, "call read\n");
                     break;
                 }
