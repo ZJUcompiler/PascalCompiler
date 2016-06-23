@@ -12,11 +12,25 @@ main:
 	subl	$264, %esp
 	leal	_$CONST$_L0, %eax
 	movl	%eax, %edi
+	pushl	%edi
 	movl	%ebp, %edx
-	movl	-264(%edx), %eax
+	leal	-264(%edx), %eax
+	pushl	%eax
+	call	strcpy
+	addl	$8, %esp
+	movl	%ebp, %edx
+	leal	-264(%edx), %eax
 	pushl	%eax
 	subl	$4, %esp
-	call	_writeln_int
+	addl	$1, 4(%esp)
+	call	_writeln_string
+	addl	$8, %esp
+	movl	%ebp, %edx
+	leal	-264(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	addl	$1, 4(%esp)
+	call	_writeln_string
 	addl	$8, %esp
 	leal	_$CONST$_L1, %eax
 	movl	%eax, %edi
