@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
 	}
 	//printf("now == == %d\n",buckets);
 	if (printflag && !hasError && root != NULL) printTree(root, 0);
-	print_symbol_table(  buckets  );
+		//print_symbol_table(  buckets  );
 	if(printSymbol){
 		print_symbol_table(  (*(buckets+52))->nextBucket  );
 		//print_symbol_table(  (*((*(buckets+28))->nextBucket+13))->nextBucket  );

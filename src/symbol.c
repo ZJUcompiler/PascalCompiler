@@ -22,9 +22,9 @@ void print_symbol_table(symbolNode* now){
         }
       }
 		}
-		printf("nowBucket = %d\n",now);
-    printf("memloc = %d\n",(*(now+BUCKET_SIZE))->memloc);
-		printf("nextBucket = %d\n",(*(now+BUCKET_SIZE))->nextBucket);
+		printf("nowBucket = %ld\n",(long)now);
+    printf("memloc = %ld\n",(long)((*(now+BUCKET_SIZE))->memloc));
+		printf("nextBucket = %ld\n",(long)((*(now+BUCKET_SIZE))->nextBucket));
 		printf("--------------------------------------------------------------\n");
 }
 /*获取表达式的类型*/
@@ -274,7 +274,7 @@ char* type_string(int type){
   case 9:return (char*)("const");break;
   case 10:return (char*)("function");break;
   case 11:return (char*)("procedure");break;
-  default : return (char*)("unknow");break;
+  default : return (char*)("unknown");break;
   }
 }
 
@@ -614,6 +614,7 @@ int look_routine_part(TreeNode* routinePart){
 
 symbolNode look_array_decl(char* name, int size, int type){
  // new_symbol_node(name, int def_line, int type, int length, int type_const_arrayType);
+	return NULL;
 }
 
 /*函数参数部分的扫描*/
@@ -670,7 +671,7 @@ int look_func_decl(TreeNode* funcOrProcDecl){
       fprintf(ERR,REDEFINE,node->lines->line,node->name);
       //fprintf(stderr,"aa\n");
   }
-  symbolNode* func_bucket;
+  symbolNode* func_bucket = NULL;
   //fprintf(stderr,"look_func_decl1\n");
 	int count = 0;//函数有几个参数
   func_bucket = build_sym_tab(func_bucket);//建立一个新的symbol table，自动初始化
@@ -725,7 +726,7 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
       //printf("aa");
   }
   //printf("now == == %d\n",(long)(now));
-  symbolNode* proc_bucket;
+  symbolNode* proc_bucket = NULL;
   //fprintf(stderr,"look_proc_decl2");
   proc_bucket = build_sym_tab(proc_bucket);//建立一个新的symbol table，自动初始化
   node -> nextBucket = proc_bucket;
@@ -1110,7 +1111,7 @@ int semantic_routine_head(TreeNode* routineHead){
 }
 int semantic_routine_stmt_list(TreeNode* routineStmt){
 	//printf("today1\n");
-  look_stmt_list_part(routineStmt);
+	return look_stmt_list_part(routineStmt);
 }
 
 int semantic_routine(TreeNode* routine){
@@ -1119,6 +1120,7 @@ int semantic_routine(TreeNode* routine){
 	semantic_routine_head(routineHead);
   //printf("dd\n");
 	semantic_routine_stmt_list(routineStmt);
+	return 0;
 }
 
 int semantic_analysis(TreeNode* root){
