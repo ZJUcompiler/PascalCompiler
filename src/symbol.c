@@ -36,7 +36,7 @@ int get_sonex_type(TreeNode* exp){
   char* nodekind = getNodeKindString(exp -> nodekind);
   //加减乘除
 	//printf("dd\n");
-  if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_MINUS")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0 ){
+  if(strcmp(nodekind,"EXP_PLUS") == 0 || strcmp(nodekind,"EXP_MINUS")==0 || strcmp(nodekind,"EXP_MUL")==0 || strcmp(nodekind,"EXP_DIV")==0 || strcmp(nodekind,"EXP_MOD")==0){
     return exp->type = get_exp_cal_type(exp);
   }
   //不等式
