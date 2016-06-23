@@ -18,8 +18,8 @@
 typedef enum{
     I32,
     I8,
-    F32
-    // STR
+    F32,
+    STR
 } TypeVar;
 
 typedef struct {
@@ -54,7 +54,7 @@ static inline char *getValTypeStr(TypeVar t)
         case I32: return "i32";
         case I8: return "i8";
         case F32: return "f32";
-        // case STR: return "str";
+        case STR: return "str";
     }
     return NULL;
 }
@@ -82,7 +82,7 @@ static char *getNaiveK(TreeNode *tree, TypeVar *varType)
         else if (tree->type == Array)
             *varType = I32;
         else if (tree->type == String)
-            *varType = I32;
+            *varType = STR;
         else if (tree->type == Char)
             *varType = I8;
         else if (tree->type == Record)
@@ -388,10 +388,10 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         // genStmt handle memcpy() for string assignment
         // Strings should be assigned a label and put into the const area
         char label[32];
-        *varType = I32;
-        sprintf(label, "_$CONST$_L%d\n", ct_count);
-        fprintf(IR, "asn i32 %s i32 %s _\n", label, varId);
-        ct_insert_str(tree->tokenString, label);
+        *varType = STR;
+        sprintf(label, "_$CONST$_L%d", ct_count);
+        fprintf(IR, "asn i32 %s str %s\n", label, varId);
+        ct_insert_str(label, tree->tokenString);
     }
     else
     {
@@ -487,7 +487,7 @@ static void genStmt(TreeNode *tree) {
                     }
                     else if (id->type == String)
                     {
-                        assert(tp == I32);
+                        assert(tp == STR);
                         fprintf(IR, "asn_str i32 %s str %s\n", exprId, id->tokenString);
                         // assert(0);
                     }
@@ -774,7 +774,7 @@ static void genStmt(TreeNode *tree) {
                 // case_expr: ID COLON stmt SEMI
                 if (ch1->nodekind == N_ID) {
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", exprId, ch1->tokenString, t0);
-                    fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L1);
+                    fprintf(IR, "if_t i8 %s _$JMP$_L%d\n", t0, L1);
                 }
                 // case_expr: const_value COLON stmt SEMI
                 else {
@@ -783,7 +783,7 @@ static void genStmt(TreeNode *tree) {
                         if ( !(constId = getNaiveK(exp, &constTp)))
                             { genExp(exp, &constTp, t0); constId = t0;}
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", constId, ch1->tokenString, t0);
-                    fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L1);
+                    fprintf(IR, "if_t i8 %s _$JMP$_L%d\n", t0, L1);
                 }
                 case_expr = case_expr->sibling;
             }

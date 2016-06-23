@@ -188,7 +188,7 @@ static int getValue(char *op, int op_type, int regID) {
         return regID;
     }
     else if (isLabel(op)) {
-        fprintf(CODE, "\tmovl\t%s, %%%s\n", op, reg);
+        fprintf(CODE, "\tleal\t%s, %%%s\n", op, reg);
         return regID;
     }
     else if (isVar(op)) {
@@ -872,7 +872,7 @@ static void genInst(char *line, FILE *IR) {
         tok = strtok(NULL, " \n\r");
         fprintf(CODE, "\tjmp\t%s\n", tok);
     }
-    else if (isIF(tok)) {
+    else if (isIF_F(tok)) {
         tok = strtok(NULL, " \r\n");
         tok = strtok(NULL, " \r\n");
         op1_type = i8;
@@ -885,6 +885,21 @@ static void genInst(char *line, FILE *IR) {
         findRegbyID(regID, reg);
         tok = strtok(NULL, " \r\n");
         fprintf(CODE, "\tcmpl\t$0, %%%s\n", reg);
+        fprintf(CODE, "\tje\t%s\n", tok);
+    }
+    else if (isIF_T(tok)) {
+        tok = strtok(NULL, " \r\n");
+        tok = strtok(NULL, " \r\n");
+        op1_type = i8;
+        strcpy(op1, tok);
+        regID = getValue(op1, op1_type, EAX);
+        if (regID == AL) {
+            fprintf(CODE, "\tmovzbl\t%%al, %%eax\n");
+            regID = EAX;
+        }
+        findRegbyID(regID, reg);
+        tok = strtok(NULL, " \r\n");
+        fprintf(CODE, "\tcmpl\t$1, %%%s\n", reg);
         fprintf(CODE, "\tje\t%s\n", tok);
     }
     else if (isPUSH(tok)) {
@@ -976,6 +991,8 @@ static void genInst(char *line, FILE *IR) {
             type = f32;
         else if (strcmp(tok, "i8") == 0)
             type = i8;
+        else if (strcmp(tok, "str") == 0)
+            type = str;
         argType[argNum] = type;
         tok = strtok(NULL, " \r\n");
         strcpy(argList[argNum++], tok);
@@ -1047,16 +1064,20 @@ static void genInst(char *line, FILE *IR) {
                         fprintf(CODE, "\tcall\t_write_char\n");
                     else if (argType[0] == i32)
                         fprintf(CODE, "\tcall\t_write_int\n");
-                    else if (argType[0] == str)
+                    else if (argType[0] == str) {
+                        fprintf(CODE, "\taddl\t$1, 4(%%esp)\n");
                         fprintf(CODE, "\tcall\t_write_string\n");
+                    }
                 }
                 else if (isWRITELN(tok)) {
                     if (argType[0] == i8)
                         fprintf(CODE, "\tcall\t_writeln_char\n");
                     else if (argType[0] == i32)
                         fprintf(CODE, "\tcall\t_writeln_int\n");
-                    else if (argType[0] == str)
+                    else if (argType[0] == str) {
+                        fprintf(CODE, "\taddl\t$1, 4(%%esp)\n");
                         fprintf(CODE, "\tcall\t_writeln_string\n");
+                    }
                 }
                 else
                     fprintf(CODE, "\tcall\t%s\n", tok);
@@ -1181,9 +1202,15 @@ static void genTextSection(FILE *IR) {
 static void genDataSection(FILE *ir) {
     fprintf(CODE, ".section\t.rodata\n");
 
+    char *tok;
     char line[512];
     while (fgets(line, sizeof(line), ir) != 0) {
-        fprintf(CODE, "data: %s\n", line);
+        if (isLabel(line)) {
+            tok = strtok(line, " \r\n");
+            fprintf(CODE, "%s:\n", tok);
+        }
+        else
+            fprintf(CODE, "\t%s\n", line);
     }
 }
 void genX86Asm(FILE *IR) {

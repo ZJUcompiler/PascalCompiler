@@ -10,6 +10,48 @@ main:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$4, %esp
+	movl	$0, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$1, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$2, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
 	movl	$3, %eax
 	pushl	%eax
 	subl	$4, %esp
@@ -18,6 +60,82 @@ main:
 	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$4, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$5, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$6, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$7, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	$8, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
 	leave
 	ret
 .LFE0:
@@ -29,39 +147,20 @@ fib:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$0, %esp
-	movl	$110, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_write_char
-	addl	$8, %esp
-	movl	$61, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_write_char
-	addl	$8, %esp
-	movl	%ebp, %edx
-	movl	12(%edx), %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_write_int
-	addl	$8, %esp
-	movl	$32, %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_write_char
-	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	12(%edx), %eax
 	movl	$1, %ebx
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %edi
+	pushl	%edi
 	movl	%ebp, %edx
 	movl	12(%edx), %eax
 	movl	$0, %ebx
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %esi
+	popl	%edi
 	orl	%esi, %edi
 	cmpl	$0, %edi
 	je	_$JMP$_L0
@@ -79,6 +178,7 @@ _$JMP$_L0:
 	call	fib
 	movl	(%esp), %edi
 	addl	$8, %esp
+	pushl	%edi
 	movl	$2, %eax
 	movl	%ebp, %edx
 	movl	12(%edx), %edi
@@ -88,16 +188,11 @@ _$JMP$_L0:
 	call	fib
 	movl	(%esp), %esi
 	addl	$8, %esp
+	popl	%edi
 	addl	%esi, %edi
 	movl	%ebp, %edx
 	movl	%edi, 8(%edx)
 _$JMP$_L1:
-	movl	%ebp, %edx
-	movl	8(%edx), %eax
-	pushl	%eax
-	subl	$4, %esp
-	call	_writeln_int
-	addl	$8, %esp
 	leave
 	ret
 .LFE1:

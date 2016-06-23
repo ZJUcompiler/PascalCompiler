@@ -1,4 +1,11 @@
 _$MAIN$_: 
+asn i32 _$CONST$_L0 str $t0
+asn_str i32 $t0 str d
+arg i32 d
+call writeln
+asn i32 _$CONST$_L1 str $t0
+arg str $t0
+call write
 arg i32 &r
 call read
 asn i32 1 i32 i
@@ -14,3 +21,7 @@ _$JMP$_L1
 arg i32 r
 call writeln
 .data
+_$CONST$_L0
+.string "\015Hello, world!\000"
+_$CONST$_L1
+.string "\018please input r: \000"

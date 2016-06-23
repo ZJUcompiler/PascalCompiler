@@ -120,8 +120,11 @@ static inline int isCALL(const char *comm) {
 static inline int isARG(const char *comm) {
     return strcmp(comm, "arg") == 0;
 }
-static inline int isIF(const char *comm) {
+static inline int isIF_F(const char *comm) {
     return strcmp(comm, "if_f") == 0;
+}
+static inline int isIF_T(const char *comm) {
+    return strcmp(comm, "if_t") == 0;
 }
 static inline int isJMP(const char *comm) {
     return strcmp(comm, "jmp") == 0;
