@@ -19,6 +19,7 @@ typedef enum{
     I32,
     I8,
     F32
+    // STR
 } TypeVar;
 
 typedef struct {
@@ -62,6 +63,7 @@ static inline char *getValTypeStr(TypeVar t)
         case I32: return "i32";
         case I8: return "i8";
         case F32: return "f32";
+        // case STR: return "str";
     }
     return NULL;
 }
@@ -494,8 +496,9 @@ static void genStmt(TreeNode *tree) {
                     }
                     else if (id->type == String)
                     {
-                        // TODO:
-                        assert(0);
+                        assert(tp == I32);
+                        fprintf(IR, "asn_str i32 %s str %s\n", exprId, id->tokenString);
+                        // assert(0);
                     }
                     else if (id->type == Record)
                     {
@@ -545,7 +548,10 @@ static void genStmt(TreeNode *tree) {
                     else if (tree->type == Record)
                         assert(0); // TODO
                     else if (tree->type == String)
+                    {                        
                         assert(0);
+                        // fprintf(IR, "store i32 %s str %s\n", exprId, id->tokenString);
+                    }
                     else
                         assert(0);
 
