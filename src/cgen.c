@@ -774,7 +774,7 @@ static void genStmt(TreeNode *tree) {
                 // case_expr: ID COLON stmt SEMI
                 if (ch1->nodekind == N_ID) {
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", exprId, ch1->tokenString, t0);
-                    fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L1);
+                    fprintf(IR, "if_t i8 %s _$JMP$_L%d\n", t0, L1);
                 }
                 // case_expr: const_value COLON stmt SEMI
                 else {
@@ -783,7 +783,7 @@ static void genStmt(TreeNode *tree) {
                         if ( !(constId = getNaiveK(exp, &constTp)))
                             { genExp(exp, &constTp, t0); constId = t0;}
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", constId, ch1->tokenString, t0);
-                    fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L1);
+                    fprintf(IR, "if_t i8 %s _$JMP$_L%d\n", t0, L1);
                 }
                 case_expr = case_expr->sibling;
             }

@@ -15,14 +15,14 @@ begin
 end;
 begin
     A:=0;
-    a:=0;
+    a:=10;
 	repeat
 		A:=A+1;
 	until A>2;
     writeln(A);
 	case (A)of
 		1:a:=a+5;
-		2:a:=a+2;
+		2:a:=a+10;
 		3:a:=a+3;
 	end;
     writeln(a);

@@ -13,7 +13,7 @@ main:
 	movl	$0, %eax
 	movl	%ebp, %edx
 	movl	%eax, -13(%edx)
-	movl	$0, %eax
+	movl	$10, %eax
 	movl	%ebp, %edx
 	movl	%eax, -9(%edx)
 _$JMP$_L0:
@@ -43,7 +43,7 @@ _$JMP$_L0:
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %edi
-	cmpl	$0, %edi
+	cmpl	$1, %edi
 	je	_$JMP$_L2
 	movl	%ebp, %edx
 	movl	-13(%edx), %eax
@@ -51,7 +51,7 @@ _$JMP$_L0:
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %edi
-	cmpl	$0, %edi
+	cmpl	$1, %edi
 	je	_$JMP$_L3
 	movl	%ebp, %edx
 	movl	-13(%edx), %eax
@@ -59,7 +59,7 @@ _$JMP$_L0:
 	cmpl	%ebx, %eax
 	sete	%al
 	movzbl	%al, %edi
-	cmpl	$0, %edi
+	cmpl	$1, %edi
 	je	_$JMP$_L4
 _$JMP$_L2:
 	movl	$5, %eax
@@ -70,7 +70,7 @@ _$JMP$_L2:
 	movl	%edi, -9(%edx)
 	jmp	_$JMP$_L1
 _$JMP$_L3:
-	movl	$2, %eax
+	movl	$10, %eax
 	movl	%ebp, %edx
 	movl	-9(%edx), %edi
 	addl	%eax, %edi

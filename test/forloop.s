@@ -10,11 +10,12 @@ main:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$8, %esp
-	movl	_$CONST$_L0, %eax
+	leal	_$CONST$_L0, %eax
 	movl	%eax, %edi
 	pushl	%edi
 	subl	$4, %esp
-	call	_write_int
+	addl	$1, 4(%esp)
+	call	_write_string
 	addl	$8, %esp
 	movl	%ebp, %edx
 	leal	-8(%edx), %eax
@@ -65,7 +66,7 @@ _$JMP$_L1:
 
 .section	.rodata
 _$CONST$_L0:
-	.string "\18please input r:\0"
+	.string "\018please input r: \000"
 
 .ident	"PasC v1.0"
 .section	.node.GNU-stack,"",@progbits

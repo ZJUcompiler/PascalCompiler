@@ -1,6 +1,6 @@
 _$MAIN$_: 
 asn i32 0 i32 A
-asn i32 0 i32 a
+asn i32 10 i32 a
 _$JMP$_L0
 add i32 A i32 1 i32 $t0
 asn i32 $t0 i32 A
@@ -9,17 +9,17 @@ if_f i8 $t0 _$JMP$_L0
 arg i32 A
 call writeln
 eq i32 A i32 1 i8 $t0
-if_f i8 $t0 _$JMP$_L2
+if_t i8 $t0 _$JMP$_L2
 eq i32 A i32 2 i8 $t0
-if_f i8 $t0 _$JMP$_L3
+if_t i8 $t0 _$JMP$_L3
 eq i32 A i32 3 i8 $t0
-if_f i8 $t0 _$JMP$_L4
+if_t i8 $t0 _$JMP$_L4
 _$JMP$_L2
 add i32 a i32 5 i32 $t0
 asn i32 $t0 i32 a
 jmp _$JMP$_L1
 _$JMP$_L3
-add i32 a i32 2 i32 $t0
+add i32 a i32 10 i32 $t0
 asn i32 $t0 i32 a
 jmp _$JMP$_L1
 _$JMP$_L4
