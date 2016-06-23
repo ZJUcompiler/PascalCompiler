@@ -82,7 +82,7 @@ static char *getNaiveK(TreeNode *tree, TypeVar *varType)
         else if (tree->type == Array)
             *varType = I32;
         else if (tree->type == String)
-            *varType = I32;
+            *varType = STR;
         else if (tree->type == Char)
             *varType = I8;
         else if (tree->type == Record)
