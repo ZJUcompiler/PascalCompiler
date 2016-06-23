@@ -90,7 +90,7 @@ int get_sonex_type(TreeNode* exp){
 		TreeNode* expression = argsList->child;
 		while(expression != NULL){
 		  expression -> type = get_expression_type(expression);
-			printf("expression : %d \n",expression->type);
+			//printf("expression : %d \n",expression->type);
 		  expression = expression -> sibling;
 		}
 		//printf("id : %s\n",id->tokenString);
@@ -634,6 +634,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
     paraType = paraType -> sibling;
   }
 	(*(now+BUCKET_SIZE))->memloc = 0;
+	now = (*(now+BUCKET_SIZE))->nextBucket;
   return count;
 }
 /*解析一个函数function*/
@@ -768,50 +769,74 @@ int look_stmt_list_part(TreeNode* stmtList){
 
 
 int look_proc_stmt(TreeNode* subStmt){
+	int count = 0;
   TreeNode* func_name = subStmt -> child;
   TreeNode* func_params = func_name -> sibling;
-	symbolNode paramNode;
+	//symbolNode paramNode;
   if(func_params != NULL){
-		int count = 0;
     TreeNode* param = func_params -> child;
     while(param != NULL){
 			count ++;
-			paramNode = st_lookup(now, param);
-      param -> type = paramNode->type;//get_expression_type(param);
+			//paramNode = st_lookup(now, param);
+      param -> type = get_expression_type(param);
       param = param -> sibling;
     }
-		if(count > paramNode->length){
-			fprintf(ERR,TOO_MANY_ARGS,func_name->lineno);
-			return -1;
-		}
-		else if(count < paramNode->length){
-			fprintf(ERR,TOO_LITTLE_ARGS,func_name->lineno);
-			return -1;
-		}
-		else ;//参数个数对的
   }
 	func_name -> type = Procedure;
 	symbolNode func = st_lookup(now, func_name->tokenString);
 	//printf("a?\n");
-	if(strcmp(getNodeKindString(func_name->nodekind),"ID") == 0){
+	if(strcmp(getNodeKindString(func_name->nodekind),"ID") == 0){//普通函数
 	 // printf("now = %d, %s\n",now,func_name->tokenString);
 		if(func == NULL){
 			//printf("a?\n");
 			fprintf(ERR, NO_SUCH_SYMBOL, func_name->lineno, func_name->tokenString);
 			return -1;
 		}
+		if(count > func->length){//参数太多
+			fprintf(ERR,TOO_MANY_ARGS,func_name->lineno);
+			return -1;
+		}
+		else if(count < func->length){//参数太少
+			fprintf(ERR,TOO_LITTLE_ARGS,func_name->lineno);
+			return -1;
+		}
+		else ;//参数个数对的
+
 	}
-	else if(strcmp(getNodeKindString(func_name->nodekind),"READ") == 0){//系统函数
+	else if(strcmp(func_name->tokenString,"read") == 0){//系统函数
 		//printf("haha\n");
+		//printf("now = %d\n",now);
+		symbolNode id = st_lookup(now, func_params->tokenString);
+		if(id == NULL){
+			fprintf(ERR,NO_SUCH_SYMBOL,func_params->lineno, func_params->tokenString);
+			return -1;
+		}
+		func_params -> type = id->type;
 		return 0;
 	}
-	else if(strcmp(func_name->tokenString,"write") == 0){
+	else if(strcmp(func_name->tokenString,"write") == 0){//系统函数
+		if(count > 1){
+			fprintf(ERR,TOO_MANY_ARGS,func_name->lineno);
+			return -1;
+		}
+		else if(count < 1){
+			fprintf(ERR,TOO_LITTLE_ARGS,func_name->lineno);
+			return -1;
+		}
 		return 0;
 	}
-	else if(strcmp(func_name->tokenString,"writeln") == 0){
+	else if(strcmp(func_name->tokenString,"writeln") == 0){//系统函数
+		if(count > 1){
+			fprintf(ERR,TOO_MANY_ARGS,func_name->lineno);
+			return -1;
+		}
+		else if(count < 1){
+			fprintf(ERR,TOO_LITTLE_ARGS,func_name->lineno);
+			return -1;
+		}
 		return 0;
 	}
-	else{
+	else{//没这个函数
 		fprintf(ERR, NO_SUCH_SYMBOL, func_name->lineno, func_name->tokenString);
 		return -1;
 	}
@@ -1060,7 +1085,7 @@ int semantic_routine_head(TreeNode* routineHead){
   TreeNode* routinePart = varPart -> sibling;
   //fprintf(stderr,"3\n");
   look_const_part(constPart);
-  fprintf(stderr,"3.5\n");
+  //fprintf(stderr,"3.5\n");
   look_type_part(typePart);
   //fprintf(stderr,"3.6\n");
   look_var_part(varPart);
