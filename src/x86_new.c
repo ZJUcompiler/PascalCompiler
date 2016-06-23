@@ -107,6 +107,8 @@ static void Parse_2op(char *line, char op1[], char op2[],\
         *op2_type = f32;
     else if (strcmp(tok, "i8") == 0)
         *op2_type = i8;
+    else if (strcmp(tok, "str") == 0)
+        *op2_type = str;
     // op2
     tok = strtok(NULL, " \r\n");
     strcpy(op2, tok);
@@ -849,6 +851,11 @@ static void genInst(char *line, FILE *IR) {
             }
         }
     }
+    else if (isASN_STR(tok)) {
+        Parse_2op(line_back, op1, op2, &op1_type, &op2_type);
+        regID = getValue(op1, op1_type, EAX);
+       // regID = getAddr(op2, op2_type, EBX);
+    }
     else if (isJMP(tok)) {
         tok = strtok(NULL, " \n\r");
         fprintf(CODE, "\tjmp\t%s\n", tok);
@@ -907,8 +914,8 @@ static void genInst(char *line, FILE *IR) {
                 tok = strtok(NULL, " \r\n");
                 symbolNode symnode = st_lookup(currSymtab, tok);
                 // return value
-                if (symnode->type == Function || symnode->type == Integer
-                        || symnode->type == Real || symnode->type == Boolean)
+
+                if (symnode == NULL || symnode->type != Procedure)
                     fprintf(CODE, "\tsubl\t$4, %%esp\n");
 
                 if (isABS(tok)) {
@@ -942,12 +949,18 @@ static void genInst(char *line, FILE *IR) {
                     fprintf(CODE, "\tcall\t_succ_int\n");
                 }
                 else if (isREAD(tok)) {
-                    // TODO
-                    fprintf(CODE, "\tcall\t_read_int\n");
+                    if (argType[0] == i8)
+                        fprintf(CODE, "\tcall\t_read_char\n");
+                    else if (argType[0] == i32)
+                        fprintf(CODE, "\tcall\t_read_int\n");
                 }
                 else if (isWRITE(tok)) {
-                    // TODO
-                    fprintf(CODE, "\tcall\t_write_int\n");
+                    if (argType[0] == i8)
+                        fprintf(CODE, "\tcall\t_writeln_char\n");
+                    else if (argType[0] == i32)
+                        fprintf(CODE, "\tcall\t_writeln_int\n");
+                    else if (argType[0] == str)
+                        fprintf(CODE, "\tcall\t_writeln_string\n");
                 }
                 else if (isWRITELN(tok)) {
                     // TODO

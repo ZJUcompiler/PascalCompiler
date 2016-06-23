@@ -27,6 +27,7 @@ void genX86Asm(FILE *IR);
 static const int i32 = 0x00;
 static const int i8 = 0x01;
 static const int f32 = 0x02;
+static const int str = 0x03;
 
 extern symbolNode buckets[];
 extern int layerNum;
@@ -91,6 +92,9 @@ static inline int isFDIV(const char *comm) {
 }
 static inline int isASN(const char *comm) {
     return strcmp(comm, "asn") == 0;
+}
+static inline int isASN_STR(const char *comm) {
+    return strcmp(comm, "asn_str") == 0;
 }
 static inline int isLOAD(const char *comm) {
     return strcmp(comm, "load") == 0;
