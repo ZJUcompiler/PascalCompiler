@@ -735,15 +735,21 @@ static void genStmt(TreeNode *tree) {
             if (direct->nodekind == N_TO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", exprId2, id->tokenString, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // bt -> 1 == 0 = 0 -> jump
-                fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+                // fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             else if (direct->nodekind == N_DOWNTO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", id->tokenString, exprId2, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // lt -> 1 == 0 = 0 -> jump
-                fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+                // fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L2);
             genStmt(stmt->child);
+            if (direct->nodekind == N_TO) {
+                fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+            }
+            else if (direct->nodekind == N_DOWNTO) {
+                fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
+            }
             fprintf(IR, "jmp _$JMP$_L%d\n", L1);
             fprintf(IR, "_$JMP$_L%d\n", L2);
             break;
