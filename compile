@@ -8,7 +8,6 @@ while getopts :dstyf: opt; do
         t)  comm=$comm+" -t";;
         y)  comm=$comm+" -y";;
         f)  sourceFile=$OPTARG;
-            echo $sourceFile
             if [ -e $sourceFile ]; then
                 ok=1
             else
@@ -20,7 +19,6 @@ done
 # compile
 if [ "$ok" = "1" ]; then
     comm=$comm" "$sourceFile
-    echo $comm
     eval "$comm"
 else
     echo "No pascal source file specified!"

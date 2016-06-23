@@ -1181,9 +1181,15 @@ static void genTextSection(FILE *IR) {
 static void genDataSection(FILE *ir) {
     fprintf(CODE, ".section\t.rodata\n");
 
+    char *tok;
     char line[512];
     while (fgets(line, sizeof(line), ir) != 0) {
-        fprintf(CODE, "data: %s\n", line);
+        if (isLabel(line)) {
+            tok = strtok(line, " \r\n");
+            fprintf(CODE, "%s:\n", tok);
+        }
+        else
+            fprintf(CODE, "\t%s\n", line);
     }
 }
 void genX86Asm(FILE *IR) {

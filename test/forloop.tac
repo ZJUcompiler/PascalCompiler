@@ -1,6 +1,5 @@
 _$MAIN$_: 
-asn i32 _$CONST$_L0
- i32 $t0 _
+asn i32 _$CONST$_L0 i32 $t0
 arg i32 $t0
 call write
 arg i32 &r
@@ -18,5 +17,5 @@ _$JMP$_L1
 arg i32 r
 call writeln
 .data
-'please input r: ':
-.int 1126457100
+_$CONST$_L0
+.string "\18please input r:\0"

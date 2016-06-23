@@ -14,14 +14,18 @@ begin
 	a := 'a';
 end;
 begin
+    A:=0;
+    a:=0;
 	repeat
 		A:=A+1;
-	until A>10;
+	until A>2;
+    writeln(A);
 	case (A)of
-		1:a:=a+1;
-		2:a:=a+1;
-		3:a:=a+1;
+		1:a:=a+5;
+		2:a:=a+2;
+		3:a:=a+3;
 	end;
+    writeln(a);
 	{bbbb := 3;
 	repeat
 		a:=a+1;

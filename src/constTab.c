@@ -106,7 +106,7 @@ void ct_genConst()
                 fprintf(IR, ".long %d\n", p->data.integer);
                 break;
             case CT_STRING:
-                fprintf(IR, ".string '\\%d%s\\0'\n", (unsigned int)(p->data.str[0]), &(p->data.str[2]));
+                fprintf(IR, ".string \"\\%d%s\\0\"\n", (unsigned int)(p->data.str[0]), &(p->data.str[2]));
                 break;
             case CT_REAL:
                 fprintf(IR, ".real 0x%x\n", (unsigned int)(p->data.real));
