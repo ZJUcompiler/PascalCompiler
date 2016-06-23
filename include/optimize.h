@@ -1,2 +1,2 @@
 extern int opt_inlineFlag;
-void O0(TreeNode *tree);
+void foldConst(TreeNode *t)  // together with jump elimination
