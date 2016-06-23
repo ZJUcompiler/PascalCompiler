@@ -1074,7 +1074,7 @@ static void genInst(char *line, FILE *IR) {
                 }
                 else if (isWRITE(tok)) {
                     if (argType[0] == i8)
-                        fprintf(CODE, "\tcall\t_write_char\n");
+                        fprintf(CODE, "\tcall\t_write_int\n");
                     else if (argType[0] == i32)
                         fprintf(CODE, "\tcall\t_write_int\n");
                     else if (argType[0] == str) {
@@ -1084,7 +1084,7 @@ static void genInst(char *line, FILE *IR) {
                 }
                 else if (isWRITELN(tok)) {
                     if (argType[0] == i8)
-                        fprintf(CODE, "\tcall\t_writeln_char\n");
+                        fprintf(CODE, "\tcall\t_writeln_int\n");
                     else if (argType[0] == i32)
                         fprintf(CODE, "\tcall\t_writeln_int\n");
                     else if (argType[0] == str) {

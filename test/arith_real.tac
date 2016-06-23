@@ -1,4 +1,4 @@
-_$MAIN$_: 
+_$MAIN$_
 asn i32 2 i32 a
 asn i32 5 i32 b
 asn f32 1080033280 f32 d
