@@ -603,6 +603,7 @@ symbolNode look_array_decl(char* name, int size, int type){
 
 /*函数参数部分的扫描*/
 int look_params(TreeNode* parameters){//函数的参数分析
+	int count = 0;
   TreeNode* paraType = parameters -> child;
   TreeNode* nameList;
   TreeNode* type;
@@ -621,7 +622,9 @@ int look_params(TreeNode* parameters){//函数的参数分析
       int succeed = insert_symbol(node);
       if(succeed == -1){
        fprintf(ERR,REDEFINE,node->lines->line,node->name);
+				return -1;
       }
+			count ++;//记录有几个参数
       add_loc_by_type(type_check(type->tokenString),1, BUCKET_SIZE);
       int pos = hash(id->tokenString);
       (*(now+pos))->memloc = -(*(now+BUCKET_SIZE))->memloc-4;
@@ -631,7 +634,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
     paraType = paraType -> sibling;
   }
 	(*(now+BUCKET_SIZE))->memloc = 0;
-  return 0;
+  return count;
 }
 /*解析一个函数function*/
 int look_func_decl(TreeNode* funcOrProcDecl){
@@ -653,6 +656,7 @@ int look_func_decl(TreeNode* funcOrProcDecl){
   }
   symbolNode* func_bucket;
   //fprintf(stderr,"look_func_decl1\n");
+	int count = 0;//函数有几个参数
   func_bucket = build_sym_tab(func_bucket);//建立一个新的symbol table，自动初始化
   node -> nextBucket = func_bucket;
  // fprintf(stderr,"now1 = %d",now);
@@ -672,7 +676,8 @@ int look_func_decl(TreeNode* funcOrProcDecl){
       //fprintf(stderr,"aa");
     }
   //fprintf(stderr,"look_func_decl3\n");
-  look_params(parameters);
+   count = look_params(parameters);
+	node -> length = count;
   return_type -> type = type_check(return_type->tokenString);
   //fprintf(stderr,"look_func_decl4\n");
   semantic_routine(routine);
@@ -691,6 +696,7 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   //TreeNode* return_type = parameters->sibling->child;
   //fprintf(stderr,"look_proc_decl6\n");
   char * name;
+	int count=0;
   name = (char*)malloc(sizeof(char)*(strlen(id->tokenString)+1));
   //fprintf(stderr,"look_proc_decl1");
   strcpy(name, id->tokenString);//函数名
@@ -708,7 +714,8 @@ int look_proc_decl(TreeNode* funcOrProcDecl){
   proc_bucket = build_sym_tab(proc_bucket);//建立一个新的symbol table，自动初始化
   node -> nextBucket = proc_bucket;
   now = proc_bucket;//当前bucket的指针指向函数的bucket
-  look_params(parameters);
+  count = look_params(parameters);
+	node -> length = count;
   semantic_routine(routine);
   return 0;
 }
@@ -763,12 +770,25 @@ int look_stmt_list_part(TreeNode* stmtList){
 int look_proc_stmt(TreeNode* subStmt){
   TreeNode* func_name = subStmt -> child;
   TreeNode* func_params = func_name -> sibling;
+	symbolNode paramNode;
   if(func_params != NULL){
+		int count = 0;
     TreeNode* param = func_params -> child;
     while(param != NULL){
-      param -> type = get_expression_type(param);
+			count ++;
+			paramNode = st_lookup(now, param);
+      param -> type = paramNode->type;//get_expression_type(param);
       param = param -> sibling;
     }
+		if(count > paramNode->length){
+			fprintf(ERR,TOO_MANY_ARGS,func_name->lineno);
+			return -1;
+		}
+		else if(count < paramNode->length){
+			fprintf(ERR,TOO_LITTLE_ARGS,func_name->lineno);
+			return -1;
+		}
+		else ;//参数个数对的
   }
 	func_name -> type = Procedure;
 	symbolNode func = st_lookup(now, func_name->tokenString);
@@ -782,7 +802,7 @@ int look_proc_stmt(TreeNode* subStmt){
 		}
 	}
 	else if(strcmp(getNodeKindString(func_name->nodekind),"READ") == 0){//系统函数
-		printf("haha\n");
+		//printf("haha\n");
 		return 0;
 	}
 	else if(strcmp(func_name->tokenString,"write") == 0){

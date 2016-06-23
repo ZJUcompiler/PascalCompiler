@@ -24,8 +24,8 @@
 #define ILLEGAL_LEFT_VALUE "line %d : The symbol except VARIABLE cannot be assign\n"
 #define NO_SUCH_SYMBOL "line %d : No such symbol named '%s'\n"
 #define NO_GOTO "Sorry, Don't support to 'goto' clause, it is an unsafe usage!\n"
-#define TOO_LITTLE_ARGS "line  %s, Too little arguments for function\n"
-#define TOO_MANY_ARGS "line  %s, Too many arguments for function\n"
+#define TOO_LITTLE_ARGS "line  %d, Too little arguments for function\n"
+#define TOO_MANY_ARGS "line  %d, Too many arguments for function\n"
 
 #define ERR stderr
 
