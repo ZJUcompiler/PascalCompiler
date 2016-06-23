@@ -84,7 +84,7 @@ int get_sonex_type(TreeNode* exp){
     TreeNode* argsList;
     id = exp -> child;
 		//printf("dd\n");
-    printf("id : %s\n",id->tokenString);
+    //printf("id : %s\n",id->tokenString);
 
     argsList = id ->sibling;
 		TreeNode* expression = argsList->child;
@@ -92,13 +92,20 @@ int get_sonex_type(TreeNode* exp){
 		  get_expression_type(expression);
 		  expression = expression -> sibling;
 		}
+		//printf("id : %s\n",id->tokenString);
 		//printf("daad\n");
 		if(strcmp(getNodeKindString(id -> nodekind),"SYS_FUNCT" ) == 0){
 			expression = argsList->child;
-			expression = get_expression_type(expression);
+			printf("id : %s\n",id->tokenString);
+			expression->type = get_expression_type(expression);
+			printf("exp : %s\n",getNodeKindString(argsList -> nodekind));
+			printf("exp : %s\n",getNodeKindString(argsList -> child -> nodekind));
+			printf("idd : %s %d\n","abs",strcmp(id -> tokenString,"abs" ) == 0);
 			//printf("ddsd\n");
 			if(strcmp(id -> tokenString,"abs" ) == 0){
+				//printf("id : %d %d\n",id->type,expression->type);
 				id -> type = expression ->type;
+				//printf("id : %s\n",id->tokenString);
 			}
 			else if(strcmp(id -> tokenString,"sqr" ) == 0){
 				id -> type = expression ->type;
@@ -119,12 +126,14 @@ int get_sonex_type(TreeNode* exp){
 				id -> type = Integer;
 			}
 			else if(strcmp(id -> tokenString,"chr" ) == 0){
-				printf("dasd\n");
+				//printf("dasd\n");
 				id -> type = Char;
 			}
 			else{
 				fprintf(ERR, NO_SUCH_SYMBOL, id->lineno, id->tokenString);
+				return -1;
 			}
+			return exp->type = id->type;
 		}
 		else{
 		  symbolNode func = st_lookup(now,id->tokenString);
@@ -149,8 +158,8 @@ int get_sonex_type(TreeNode* exp){
 		}
   }
   else{
+		lineNum = exp -> lineno;
     return exp->type = type_check(getNodeKindString(exp -> nodekind));
-    lineNum = exp -> lineno;
   }
   return 0;
 }
@@ -768,10 +777,10 @@ int look_proc_stmt(TreeNode* subStmt){
 	else if(strcmp(getNodeKindString(func_name->nodekind),"READ") == 0){//系统函数
 		return 0;
 	}
-	else if(strcmp(getNodeKindString(func_name->nodekind),"WRITE") == 0){
+	else if(strcmp(func_name->tokenString,"write") == 0){
 		return 0;
 	}
-	else if(strcmp(getNodeKindString(func_name->nodekind),"WRITELN") == 0){
+	else if(strcmp(func_name->tokenString,"writeln") == 0){
 		return 0;
 	}
 	else{
