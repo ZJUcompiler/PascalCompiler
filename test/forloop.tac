@@ -1,4 +1,8 @@
 _$MAIN$_: 
+asn i32 _$CONST$_L0
+ i32 $t0 _
+arg i32 $t0
+call write
 arg i32 &r
 call read
 asn i32 1 i32 i
@@ -14,3 +18,5 @@ _$JMP$_L1
 arg i32 r
 call writeln
 .data
+'please input r: ':
+.int 1126457100
