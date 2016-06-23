@@ -19,6 +19,7 @@ static int findIDbyIRName(const char *ir_name) {
         return ESI;
     else if (strcmp(ir_name, "$t2") == 0)
         return ECX;
+    return 0;
 }
 static void findRegbyID(int id, char reg[]) {
     switch (id) {
@@ -208,7 +209,12 @@ static int getValue(char *op, int op_type, int regID) {
                 return AL;
             }
         }
+        else if (op_type == str) {
+            fprintf(CODE, "\tleal\t%d(%%edx), %%%s\n", (0 - symnode->memloc), reg);
+            return regID;
+        }
     }
+    return 0;
 }
 
 /*
@@ -445,7 +451,7 @@ static void mul_calcu_i32(const char *inst, char *op1, char *op2, const char *op
 static void div_calcu_i32(const char *inst, char *op1, char *op2, const char *op3,
                           int op1_type, int op2_type, int op3_type) {
     int regID;
-    char reg[8], reg2[8];
+    char reg[8];
     regID = getValue(op2, op2_type, EAX);
     findRegbyID(regID, reg);
     fprintf(CODE, "\tpushl\t%%%s\n", reg);
@@ -463,7 +469,7 @@ static void div_calcu_i32(const char *inst, char *op1, char *op2, const char *op
 static void arith_calcu_f32(const char *inst, char *op1, char *op2, const char *op3,
                             int op1_type, int op2_type, int op3_type) {
     int regID;
-    char reg[8], reg2[8];
+    char reg[8];
 
     regID = getValue(op1, op1_type, EAX);
     findRegbyID(regID, reg);
@@ -866,7 +872,13 @@ static void genInst(char *line, FILE *IR) {
     else if (isASN_STR(tok)) {
         Parse_2op(line_back, op1, op2, &op1_type, &op2_type);
         regID = getValue(op1, op1_type, EAX);
-       // regID = getAddr(op2, op2_type, EBX);
+        findRegbyID(regID, reg);
+        fprintf(CODE, "\tpushl\t%%%s\n", reg);
+        regID = getValue(op2, op2_type, EAX);
+        findRegbyID(regID, reg);
+        fprintf(CODE, "\tpushl\t%%%s\n", reg);
+        fprintf(CODE, "\tcall\tstrcpy\n");
+        fprintf(CODE, "\taddl\t$8, %%esp\n");
     }
     else if (isJMP(tok)) {
         tok = strtok(NULL, " \n\r");
@@ -1214,6 +1226,7 @@ static void genDataSection(FILE *ir) {
     }
 }
 void genX86Asm(FILE *IR) {
+    currSymtab = buckets;
     genPreDecl();
     // Code section
     genTextSection(IR);

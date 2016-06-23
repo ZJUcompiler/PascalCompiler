@@ -117,11 +117,9 @@ static char *getNaiveK(TreeNode *tree, TypeVar *varType)
 static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
 {
     TreeNode *p1, *p2;
-    // char *varId = t0;
     assert( isExpK(tree) );
-    // O0(tree);
-    // use function returns to avoid MACRO definition
-    // (to avoid design complication/duplication)
+
+    // foldConst(tree);
     if ( isOpK(tree) )
     {
         TypeVar tp1, tp2;   // type of cur node
@@ -310,7 +308,6 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
                             getValTypeStr(op3.type), t1,
                             getValTypeStr(op3.type), op3.id );
     }
-    // function call
     else if ( isCallK(tree) )
     {
         if (tree->type == Integer)
@@ -340,7 +337,6 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         fprintf(IR, "call %s %s %s\n", p1->tokenString,
                 getValTypeStr(*varType), varId);
     }
-    // not factor
     else if ( isNotFacK(tree) )
     {
         assert(tree->type == Boolean);
@@ -358,7 +354,6 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         tacVal expr = newTac(exprId, tp);
         emitCode("eq", expr, bfalse, op3);
     }
-    // minus factor
     else if ( isRevFacK(tree) )
     {
         tacVal op3 = newTac(varId, I32);
@@ -384,9 +379,6 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
     }
     else if ( isStringK(tree) )
     {
-        // return string address on varId
-        // genStmt handle memcpy() for string assignment
-        // Strings should be assigned a label and put into the const area
         char label[32];
         *varType = STR;
         sprintf(label, "_$CONST$_L%d", ct_count);
@@ -541,14 +533,9 @@ static void genStmt(TreeNode *tree) {
                     else if (tree->type == String)
                     {
                         assert(0);
-                        // fprintf(IR, "store i32 %s str %s\n", exprId, id->tokenString);
                     }
                     else
                         assert(0);
-
-                    // fprintf(IR, "asn %s %s _\n", id->tokenString, t0);
-                    // fprintf(IR, "add %s %s %s\n", t0, res2, t0);
-                    // fprintf(IR, "asn %s *%s _\n", res1, t0);
                     break;
                 }
                 // assign_stmt: ID DOT ID ASSIGN expression
@@ -593,8 +580,6 @@ static void genStmt(TreeNode *tree) {
             }
             break;
         case N_PROC_STMT:
-            // procedure
-            // optimize TODO
             switch (procStmtCheck(tree)) {
                 // proc_stmt: ID
                 case 1: {
@@ -645,7 +630,6 @@ static void genStmt(TreeNode *tree) {
                 // proc_stmt: READ LP factor RP
                 case 5: {
                     // TODO
-                    // NOTE: read record?
                     TreeNode *id = tree->child;
                     TreeNode *argId = id->sibling;
                     if (argId->type == String)
@@ -658,11 +642,9 @@ static void genStmt(TreeNode *tree) {
             }
             break;
         case N_COMPOUND_STMT:
-            // compound
             genStmtList(tree);
             break;
         case N_IF_STMT: {
-            // compound
             TreeNode *exp = tree->child->child;
             TreeNode *stmt = tree->child->sibling;
             TreeNode *else_clause = stmt->sibling;
@@ -670,6 +652,18 @@ static void genStmt(TreeNode *tree) {
             char *exprId;
             if ( !(exprId = getNaiveK(exp, &exprTp)))
                 { genExp(exp, &exprTp, t0); exprId = t0;}
+
+            if (strcmp(exprId, "true")==0)      // jump elimination optimization
+            {
+                genStmt(stmt->child);
+                break;
+            }
+            else if (strcmp(exprId, "false")==0)
+            {
+                if (else_clause->child)
+                    genStmt(else_clause->child);
+                break;
+            }
 
             int L1 = labelNum++;
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", exprId, L1);
@@ -687,7 +681,6 @@ static void genStmt(TreeNode *tree) {
             break;
         }
         case N_REPEAT_STMT: {
-            // repeat
             TreeNode *stmt_list = tree->child;
             TreeNode *exp = stmt_list->sibling->child;
             int L1 = labelNum++;
@@ -701,7 +694,6 @@ static void genStmt(TreeNode *tree) {
             break;
         }
         case N_WHILE_STMT: {
-            // while
             TreeNode *exp = tree->child->child;
             TreeNode *stmt = tree->child->sibling;
             TypeVar exprTp;
@@ -718,7 +710,6 @@ static void genStmt(TreeNode *tree) {
             break;
         }
         case N_FOR_STMT: {
-            // for
             TreeNode *id = tree->child;
             TreeNode *exp1 = id->sibling->child;
             TreeNode *direct = id->sibling->sibling;
@@ -738,12 +729,10 @@ static void genStmt(TreeNode *tree) {
             if (direct->nodekind == N_TO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", exprId2, id->tokenString, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // bt -> 1 == 0 = 0 -> jump
-                // fprintf(IR, "add i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             else if (direct->nodekind == N_DOWNTO) {
                 fprintf(IR, "lt i32 %s i32 %s i8 %s\n", id->tokenString, exprId2, t0);
                 fprintf(IR, "eq i8 %s i8 0 i8 %s\n", t0, t0); // lt -> 1 == 0 = 0 -> jump
-                // fprintf(IR, "sub i32 %s i32 1 i32 %s\n", id->tokenString, id->tokenString);
             }
             fprintf(IR, "if_f i8 %s _$JMP$_L%d\n", t0, L2);
             genStmt(stmt->child);
@@ -758,7 +747,6 @@ static void genStmt(TreeNode *tree) {
             break;
         }
         case N_CASE_STMT: {
-            // case
             TreeNode *exp = tree->child->child;
             TreeNode *case_list = tree->child->sibling;
             TreeNode *case_expr = case_list->child;
@@ -771,12 +759,10 @@ static void genStmt(TreeNode *tree) {
             while (case_expr != NULL) {
                 TreeNode *ch1 = case_expr->child;
                 L1 = labelNum++;
-                // case_expr: ID COLON stmt SEMI
                 if (ch1->nodekind == N_ID) {
                     fprintf(IR, "eq i32 %s i32 %s i8 %s\n", exprId, ch1->tokenString, t0);
                     fprintf(IR, "if_t i8 %s _$JMP$_L%d\n", t0, L1);
                 }
-                // case_expr: const_value COLON stmt SEMI
                 else {
                     TypeVar constTp;
                     char *constId;
@@ -802,9 +788,7 @@ static void genStmt(TreeNode *tree) {
         }
         case N_GOTO_STMT: {
             // goto
-            // TreeNode *inte = tree->child;
             // TODO
-            // fprintf(IR, "jmp %s\n", );
             break;
         }
         default:
@@ -902,7 +886,7 @@ void codeGen( TreeNode *syntaxTree)
     TreeNode *routine_part = syntaxTree->child->sibling->child->child->sibling->sibling->sibling->sibling;
     assert(routine_part->nodekind == N_ROUTINE_PART);
 
-    fprintf(IR, "_$MAIN$_: \n");
+    fprintf(IR, "_$MAIN$_\n");
     genStmtList(syntaxTree->child->sibling->child->sibling);
 
     TreeNode *p = routine_part->child;
