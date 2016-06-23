@@ -8,10 +8,11 @@ var r:integer;
 	
 begin
 	read(i);
-
+	r := abs(-r+2);
 	a := chr(65);
 	write(r);
 	write(a);
+	writeln(i);
 
 	tr := odd(123);
 	r := sqr(4);
