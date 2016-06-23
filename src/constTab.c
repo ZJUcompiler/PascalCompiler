@@ -55,7 +55,7 @@ void ct_insert_str(char *label, char *str)
     assert(strlen(str)<=255);
     strcpy(node->data.str+1, str);
     node->data.str[0] = (char)strlen(str);
-    node->data.str[strlen(str)-1] = 0;
+    node->data.str[strlen(str)] = 0;
     node->next = NULL;
     node->type = CT_STRING;
     if (ct_tail) ct_tail->next = node;
@@ -106,7 +106,7 @@ void ct_genConst()
                 fprintf(IR, ".long %d\n", p->data.integer);
                 break;
             case CT_STRING:
-                fprintf(IR, ".string \"\\%d%s\\0\"\n", (unsigned int)(p->data.str[0]), &(p->data.str[2]));
+                fprintf(IR, ".string \"\\%03d%s\\000\"\n", (unsigned int)(p->data.str[0]), &(p->data.str[2]));
                 break;
             case CT_REAL:
                 fprintf(IR, ".real 0x%x\n", (unsigned int)(p->data.real));
