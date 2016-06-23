@@ -18,8 +18,8 @@
 typedef enum{
     I32,
     I8,
-    F32
-    // STR
+    F32,
+    STR
 } TypeVar;
 
 typedef struct {
@@ -54,7 +54,7 @@ static inline char *getValTypeStr(TypeVar t)
         case I32: return "i32";
         case I8: return "i8";
         case F32: return "f32";
-        // case STR: return "str";
+        case STR: return "str";
     }
     return NULL;
 }
@@ -388,9 +388,9 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         // genStmt handle memcpy() for string assignment
         // Strings should be assigned a label and put into the const area
         char label[32];
-        *varType = I32;
+        *varType = STR;
         sprintf(label, "_$CONST$_L%d", ct_count);
-        fprintf(IR, "asn i32 %s i32 %s\n", label, varId);
+        fprintf(IR, "asn i32 %s str %s\n", label, varId);
         ct_insert_str(label, tree->tokenString);
     }
     else
