@@ -594,7 +594,7 @@ int look_params(TreeNode* parameters){//函数的参数分析
     paraType = paraType -> sibling;
   }
 	(*(now+BUCKET_SIZE))->memloc = 0;
-	now = (*(now+BUCKET_SIZE))->nextBucket;
+	//now = (*(now+BUCKET_SIZE))->nextBucket;
   return count;
 }
 /*解析一个函数function*/
