@@ -1,11 +1,14 @@
 #include "globals.h"
 #include "util.h"
+#include "symbol.h"
 
 int opt_inlineFlag;
 
-static void foldConst(TreeNode *t)
+void foldConst(TreeNode *t)  // together with jump elimination
 {
     if ( !t || !(t->child) ) return;
+    assert(isExpK(t));
+
     TreeNode *p1, *p2;
     char *r;
     p1 = t->child;
@@ -129,12 +132,23 @@ static void foldConst(TreeNode *t)
         deleteTreeNode(p2);
         deleteTreeNode(p1);
     }
+    else if (t->nodekind == N_IF_STMT)
+    {
+        TreeNode *exp = t->child->child;
+        // TreeNode *stmt = t->child->sibling;
+        // TreeNode *else_clause = stmt->sibling;
+        if (exp->type == Boolean)
+        {
+            // if strcmp()
+        }
+    }
 }
 
-void O0(TreeNode *tree)
+
+
+void O0(TreeNode *tree) // the level number is completely meaningless
 {
-    foldConst(tree);
-    // TODO: jump elimination
+    // TODO
 }
 
 void O1(char *tacIr)
@@ -145,8 +159,7 @@ void O1(char *tacIr)
 
 void O2(char *IR)
 {
-    // TODO: tail recursion
-    // TODO: inline function
+    // TODO
 }
 
 char *m_itoa(int i)
