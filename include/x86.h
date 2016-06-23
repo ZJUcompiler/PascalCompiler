@@ -43,8 +43,11 @@ static inline int isReg(const char *op) {
 static inline int isLabel(const char *op) {
     return op[0] == '_' && op[1] == '$';
 }
+static inline int isAddr(const char *op) {
+    return op[0] == '&';
+}
 static inline int isVar(const char *op) {
-    return !(isNum(op) || isReg(op) || isLabel(op));
+    return !(isNum(op) || isReg(op) || isLabel(op) || isAddr(op));
 }
 
 // comm

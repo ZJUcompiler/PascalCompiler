@@ -182,6 +182,14 @@ static int getValue(char *op, int op_type, int regID) {
     }
     else if (isReg(op))
         return findIDbyIRName(op);
+    else if (isAddr(op)) {
+        symbolNode symnode = loopBack(op);
+        fprintf(CODE, "\tleal\t%d(%%edx), %%%s\n", 0 - symnode->memloc, reg);
+    }
+    else if (isLabel(op)) {
+        fprintf(CODE, "\tmovl\t%s, %%%s\n", op, reg);
+        return regID;
+    }
     else if (isVar(op)) {
         symbolNode symnode = loopBack(op);
         if (op_type == f32 || op_type == i32) {
@@ -199,10 +207,6 @@ static int getValue(char *op, int op_type, int regID) {
                 return AL;
             }
         }
-    }
-    else if (isLabel(op)) {
-        fprintf(CODE, "\tmovl\t%s, %%%s\n", op, reg);
-        return regID;
     }
 }
 
@@ -572,7 +576,7 @@ static void genInst(char *line, FILE *IR) {
 
             LT_calcu_f32();
             LT_writeBack(op3);
-            fprintf(CODE, "\taddl\t%%esp, $8\n");
+            fprintf(CODE, "\taddl\t$8, %%esp\n");
         }
         else if (op1_type == i32 && op2_type == f32) {
             regID = getValue(op1, op1_type, EAX);
@@ -586,7 +590,7 @@ static void genInst(char *line, FILE *IR) {
 
             LT_calcu_f32();
             LT_writeBack(op3);
-            fprintf(CODE, "\taddl\t%%esp, $8\n");
+            fprintf(CODE, "\taddl\t$8, %%esp\n");
         }
         else if (op1_type == i32 && op2_type == i32) {
             char reg2[8];
@@ -611,7 +615,7 @@ static void genInst(char *line, FILE *IR) {
 
             EQ_calcu_f32();
             EQ_writeBack(op3);
-            fprintf(CODE, "\taddl\t%%esp, $8\n");
+            fprintf(CODE, "\taddl\t$8, %%esp\n");
         }
         else if (op1_type == f32 && op2_type == i32) {
             regID = getValue(op1, op1_type, EAX);
@@ -625,7 +629,7 @@ static void genInst(char *line, FILE *IR) {
 
             EQ_calcu_f32();
             EQ_writeBack(op3);
-            fprintf(CODE, "\taddl\t%%esp, $8\n");
+            fprintf(CODE, "\taddl\t$8, %%esp\n");
         }
         else if (op1_type == i32 && op2_type == f32) {
             regID = getValue(op1, op1_type, EAX);
@@ -639,7 +643,7 @@ static void genInst(char *line, FILE *IR) {
 
             EQ_calcu_f32();
             EQ_writeBack(op3);
-            fprintf(CODE, "\taddl\t%%esp, $8\n");
+            fprintf(CODE, "\taddl\t$8, %%esp\n");
         }
         else if (op1_type == i32 && op2_type == i32) {
             regID = getValue(op1, op1_type, EAX);
@@ -963,18 +967,50 @@ static void genInst(char *line, FILE *IR) {
                 }
                 else if (isWRITE(tok)) {
                     if (argType[0] == i8)
+                        fprintf(CODE, "\tcall\t_write_char\n");
+                    else if (argType[0] == i32)
+                        fprintf(CODE, "\tcall\t_write_int\n");
+                    else if (argType[0] == str)
+                        fprintf(CODE, "\tcall\t_write_string\n");
+                }
+                else if (isWRITELN(tok)) {
+                    if (argType[0] == i8)
                         fprintf(CODE, "\tcall\t_writeln_char\n");
                     else if (argType[0] == i32)
                         fprintf(CODE, "\tcall\t_writeln_int\n");
                     else if (argType[0] == str)
                         fprintf(CODE, "\tcall\t_writeln_string\n");
                 }
-                else if (isWRITELN(tok)) {
-                    // TODO
-                    fprintf(CODE, "\tcall\t_writeln_int\n");
-                }
                 else
                     fprintf(CODE, "\tcall\t%s\n", tok);
+
+                tok = strtok(NULL, " \r\n");
+                if (tok != NULL) {
+                    int op_type;
+                    char op[32];
+                    if (strcmp(tok, "i32") == 0)
+                        op_type = i32;
+                    else if (strcmp(tok, "i8") == 0)
+                        op_type = i8;
+                    else if (strcmp(tok, "f32") == 0)
+                        op_type = f32;
+                    tok = strtok(NULL, " \r\n");
+                    strcpy(op, tok);
+                    if (isReg(op)) {
+                        regID = findIDbyIRName(op);
+                        findRegbyID(regID, reg);
+                        fprintf(CODE, "\tmovl\t(%%esp), %%%s\n", reg);
+                    }
+                    else if (isVar(op)) {
+                        symbolNode symnode = loopBack(op);
+                        if (op_type == i8)
+                            fprintf(CODE, "\tmovb\t(%%esp), %d(%%edx)\n", 0 - symnode->memloc);
+                        else
+                            fprintf(CODE, "\tmovl\t(%%esp), %d(%%edx)\n", 0 - symnode->memloc);
+                    }
+
+                }
+                fprintf(CODE, "\taddl\t$%d, %%esp\n", 4 * (argNum + 1));
                 break;
             }
         }

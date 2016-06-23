@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
 	char buf[255];
 	extern FILE *CODE;
 	analysisArg(argc, argv);
-	freopen("/home/hac/Documents/Git/PascalCompiler/test/arith.pas", "r", stdin);
+	freopen("/home/hac/Documents/Git/PascalCompiler/test/recurse.pas", "r", stdin);
 	yyparse();
 	if(doSemantic){
 		semantic_analysis(root);
@@ -67,11 +67,11 @@ int main(int argc, char* argv[]){
 	if (hasError) printf("\nthe compiler meets some error, aborted!\n\n");
 
 	// gen Immediate
-	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.tac", "w");
+	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/recurse.tac", "w");
 	codeGen(root);
 	fclose(IR);
-	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.tac", "r");
-	CODE = fopen("/home/hac/Documents/Git/PascalCompiler/test/arith.s", "w");
+	IR = fopen("/home/hac/Documents/Git/PascalCompiler/test/recurse.tac", "r");
+	CODE = fopen("/home/hac/Documents/Git/PascalCompiler/test/recurse.s", "w");
 	genX86Asm(IR);
 	fclose(CODE);
 	return 0;

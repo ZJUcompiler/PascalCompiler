@@ -10,10 +10,14 @@ main:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$4, %esp
-	movl	$5, %eax
+	movl	$3, %eax
 	pushl	%eax
 	subl	$4, %esp
 	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	%edi, -4(%edx)
 	leave
 	ret
 .LFE0:
@@ -25,6 +29,27 @@ fib:
 	pushl	%ebp
 	movl	%esp, %ebp
 	subl	$0, %esp
+	movl	$110, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_write_char
+	addl	$8, %esp
+	movl	$61, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_write_char
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	12(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_write_int
+	addl	$8, %esp
+	movl	$32, %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_write_char
+	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	12(%edx), %eax
 	movl	$1, %ebx
@@ -52,6 +77,8 @@ _$JMP$_L0:
 	pushl	%edi
 	subl	$4, %esp
 	call	fib
+	movl	(%esp), %edi
+	addl	$8, %esp
 	movl	$2, %eax
 	movl	%ebp, %edx
 	movl	12(%edx), %edi
@@ -59,10 +86,18 @@ _$JMP$_L0:
 	pushl	%edi
 	subl	$4, %esp
 	call	fib
+	movl	(%esp), %esi
+	addl	$8, %esp
 	addl	%esi, %edi
 	movl	%ebp, %edx
 	movl	%edi, 8(%edx)
 _$JMP$_L1:
+	movl	%ebp, %edx
+	movl	8(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
 	leave
 	ret
 .LFE1:
