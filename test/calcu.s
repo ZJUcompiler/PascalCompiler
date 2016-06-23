@@ -13,7 +13,7 @@ main:
 	movl	$5, %eax
 	movl	%ebp, %edx
 	movl	%eax, -4(%edx)
-	movl	$2, %eax
+	movl	$3, %eax
 	movl	%ebp, %edx
 	movl	%eax, -8(%edx)
 	movl	%ebp, %edx
@@ -66,6 +66,58 @@ main:
 	idivl	(%esp)
 	subl	$4, %esp
 	movl	%eax, %edi
+	movl	%ebp, %edx
+	movl	%edi, -12(%edx)
+	movl	%ebp, %edx
+	movl	-12(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	-8(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	cltd
+	idivl	(%esp)
+	subl	$4, %esp
+	movl	%edx, %edi
+	movl	%ebp, %edx
+	movl	%edi, -12(%edx)
+	movl	%ebp, %edx
+	movl	-12(%edx), %eax
+	pushl	%eax
+	subl	$4, %esp
+	call	_writeln_int
+	addl	$8, %esp
+	movl	%ebp, %edx
+	movl	-8(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-4(%edx), %edi
+	imull	(%esp), %edi
+	subl	$4, %esp
+	pushl	%edi
+	pushl	%edi
+	movl	%ebp, %edx
+	movl	-4(%edx), %eax
+	pushl	%eax
+	movl	%ebp, %edx
+	movl	-8(%edx), %edi
+	imull	(%esp), %edi
+	subl	$4, %esp
+	movl	%ebp, %edx
+	movl	-4(%edx), %esi
+	addl	%edi, %esi
+	popl	%edi
+	movl	%ebp, %edx
+	movl	-8(%edx), %eax
+	pushl	%eax
+	imull	(%esp), %esi
+	subl	$4, %esp
+	popl	%edi
+	addl	%esi, %edi
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
 	movl	%ebp, %edx
