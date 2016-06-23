@@ -389,9 +389,9 @@ static void genExp( TreeNode *tree, TypeVar *varType, char *varId )
         // Strings should be assigned a label and put into the const area
         char label[32];
         *varType = I32;
-        sprintf(label, "_$CONST$_L%d\n", ct_count);
-        fprintf(IR, "asn i32 %s i32 %s _\n", label, varId);
-        ct_insert_str(tree->tokenString, label);
+        sprintf(label, "_$CONST$_L%d", ct_count);
+        fprintf(IR, "asn i32 %s i32 %s\n", label, varId);
+        ct_insert_str(label, tree->tokenString);
     }
     else
     {
