@@ -775,6 +775,7 @@ int look_proc_stmt(TreeNode* subStmt){
 		}
 	}
 	else if(strcmp(getNodeKindString(func_name->nodekind),"READ") == 0){//系统函数
+		printf("haha\n");
 		return 0;
 	}
 	else if(strcmp(func_name->tokenString,"write") == 0){
