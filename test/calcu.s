@@ -23,6 +23,13 @@ main:
 	addl	%eax, %edi
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
+	leal	_$CONST$_L0, %eax
+	movl	%eax, %edi
+	pushl	%edi
+	subl	$4, %esp
+	addl	$1, 4(%esp)
+	call	_write_string
+	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	-12(%edx), %eax
 	pushl	%eax
@@ -36,6 +43,13 @@ main:
 	subl	%eax, %edi
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
+	leal	_$CONST$_L1, %eax
+	movl	%eax, %edi
+	pushl	%edi
+	subl	$4, %esp
+	addl	$1, 4(%esp)
+	call	_write_string
+	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	-12(%edx), %eax
 	pushl	%eax
@@ -51,6 +65,13 @@ main:
 	subl	$4, %esp
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
+	leal	_$CONST$_L2, %eax
+	movl	%eax, %edi
+	pushl	%edi
+	subl	$4, %esp
+	addl	$1, 4(%esp)
+	call	_write_string
+	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	-12(%edx), %eax
 	pushl	%eax
@@ -68,6 +89,13 @@ main:
 	movl	%eax, %edi
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
+	leal	_$CONST$_L3, %eax
+	movl	%eax, %edi
+	pushl	%edi
+	subl	$4, %esp
+	addl	$1, 4(%esp)
+	call	_write_string
+	addl	$8, %esp
 	movl	%ebp, %edx
 	movl	-12(%edx), %eax
 	pushl	%eax
@@ -85,41 +113,13 @@ main:
 	movl	%edx, %edi
 	movl	%ebp, %edx
 	movl	%edi, -12(%edx)
-	movl	%ebp, %edx
-	movl	-12(%edx), %eax
-	pushl	%eax
+	leal	_$CONST$_L4, %eax
+	movl	%eax, %edi
+	pushl	%edi
 	subl	$4, %esp
-	call	_writeln_int
+	addl	$1, 4(%esp)
+	call	_write_string
 	addl	$8, %esp
-	movl	%ebp, %edx
-	movl	-8(%edx), %eax
-	pushl	%eax
-	movl	%ebp, %edx
-	movl	-4(%edx), %edi
-	imull	(%esp), %edi
-	subl	$4, %esp
-	pushl	%edi
-	pushl	%edi
-	movl	%ebp, %edx
-	movl	-4(%edx), %eax
-	pushl	%eax
-	movl	%ebp, %edx
-	movl	-8(%edx), %edi
-	imull	(%esp), %edi
-	subl	$4, %esp
-	movl	%ebp, %edx
-	movl	-4(%edx), %esi
-	addl	%edi, %esi
-	popl	%edi
-	movl	%ebp, %edx
-	movl	-8(%edx), %eax
-	pushl	%eax
-	imull	(%esp), %esi
-	subl	$4, %esp
-	popl	%edi
-	addl	%esi, %edi
-	movl	%ebp, %edx
-	movl	%edi, -12(%edx)
 	movl	%ebp, %edx
 	movl	-12(%edx), %eax
 	pushl	%eax
@@ -132,5 +132,20 @@ main:
 	.size	main, .-main
 
 .section	.rodata
+_$CONST$_L0:
+	.string "\0105 + 3 = \000"
+
+_$CONST$_L1:
+	.string "\0105 - 3 = \000"
+
+_$CONST$_L2:
+	.string "\0105 * 3 = \000"
+
+_$CONST$_L3:
+	.string "\0125 div 3 = \000"
+
+_$CONST$_L4:
+	.string "\0125 mod 3 = \000"
+
 .ident	"PasC v1.0"
 .section	.node.GNU-stack,"",@progbits
